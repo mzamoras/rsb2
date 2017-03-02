@@ -1,0 +1,68 @@
+@import 'https://fonts.googleapis.com/css?family=Oxygen:300,400,700';
+@import "https://fonts.googleapis.com/css?family=Alegreya+Sans:100,300,400,500,700";
+@import 'https://fonts.googleapis.com/css?family=Advent+Pro:100,200,300,400,500,600,700';
+@import 'https://fonts.googleapis.com/css?family=Dosis:200,300,400,500,600,700';
+
+body {
+    margin:      0;
+    padding:     0;
+    font-family: 'Oxygen', sans-serif;
+    font-weight: 300;
+    background-color: #252B39;
+}
+.card{
+    position: relative;
+    cursor: default !important;
+}
+.card .title {
+    flex: 1;
+    font-family: "Dosis", sans-serif;
+    font-weight: 200;
+    font-size:   20px;
+    letter-spacing: -0.5px;
+    text-align: center;
+    /*color:       rgba(255, 255, 255, 0.3);
+    text-shadow: 0 -1px 0 rgba(0,0,0,0.3);*/
+    vertical-align: middle;
+    margin-top: 7px;
+    padding: 10px;
+    line-height: 18px;
+
+}
+
+.card .content {
+    font-family: "Dosis", sans-serif;
+    font-weight: 700;
+    font-size:   25px;
+    /*//color:       rgba(0,0,0, 0.2);*/
+    position:    absolute;
+    bottom:     -5px;
+    right:       2px;
+}
+
+.configurator{
+    position: absolute;
+    /*background-color: rgba(255,255,255,0.7);*/
+    background-color: #CDD1D9;
+    top: 0; left: 0; right: 0; height: 60px;
+    /*z-index: 5;*/
+    /*//box-shadow: 0 2px 5px rgba(0,0,0,0.2);*/
+    display: flex; align-items: center;
+    /*//color: rgba( 0,0,0,0.4 );*/
+    /*will-change: transform;
+    transform: translateZ(0)*/
+}
+
+.configurator .title{
+    padding: 2px 30px;
+    font-size: 24px;
+
+    font-weight: 500;
+}
+
+.configurator input{
+    background-color: transparent; border: none;
+    /*//border-bottom: 1px solid rgba( 0,0,0,0.4 );*/
+    outline: none;
+    /*//color: rgba( 0,0,0,0.7 );*/
+}

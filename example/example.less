@@ -1,0 +1,147 @@
+@import 'https://fonts.googleapis.com/css?family=Oxygen:300,400,700';
+@import "https://fonts.googleapis.com/css?family=Alegreya+Sans:100,300,400,500,700";
+@import 'https://fonts.googleapis.com/css?family=Advent+Pro:100,200,300,400,500,600,700';
+@import 'https://fonts.googleapis.com/css?family=Dosis:200,300,400,500,600,700';
+
+@topBarHeight: 60px;
+@trackSize   : 10px;
+@thumbSize   : 8px;
+@barWidth    : 15px;
+
+@odd         : purple;
+@pair        : pink;
+
+body{
+    width:       100%;
+    height:      100%;
+    overflow:    hidden;
+    font-family: "Oxygen", sans-serif;
+}
+
+.appContainer{
+    position: absolute;
+    bottom: 0; top: 0; left: 0; right: 0;
+    overflow: scroll;
+    padding: @topBarHeight 40px 40px 40px;
+    &:extend(.hack);
+    background: -webkit-linear-gradient(bottom, #283048, #859398);
+}
+
+.topBar{
+    position: absolute;
+    background-color: rgba(255,255,255,0.7);
+    background-color: #CDD1D9;
+    top: 0; left: 0; right: 0; height: @topBarHeight;
+    z-index: 5;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: flex; align-items: center;
+    &:extend(.hack);
+    //background: -webkit-linear-gradient(top, #232526 , #414345);
+}
+.card-container{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    //display: flex;
+    //flex-wrap: wrap;
+}
+.sCard{
+    width: 23%;
+    height: 80px;
+    display: inline-block;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid;
+    text-align: center;
+    padding-top: 30px;
+    line-height: 1em;
+    color: fade(white,30);
+
+    &.pair{
+        border-color: @pair;
+        &.selected{
+            background: fade( @odd, 90 );
+        }
+    }
+    &.odd{
+        border-color: @odd;
+        &.selected{
+            background: fade( @pair, 90 );
+        }
+    }
+
+    &.selected{
+        color: white;
+    }
+}
+
+@import "../src/Scrollbars2/style/style";
+@componentName: sb2-scrollbars2;
+ /**  - - - - - - -- - - - - -  - - - - - - - - - - - - - - - - - - - - - -- - - - **/
+/*
+
+.sb2container{
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+
+    .sb2view{
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: scroll;
+        &:extend(.hack);
+
+        !*-webkit-overflow-scrolling: touch;
+        &::-webkit-scrollbar {
+            display: none  !important;
+        }*!
+    }
+
+    .sb2tracks{
+        position: absolute;
+        background: #DDD;
+        padding: 3px 2px;
+        transition: opacity 200ms;
+        opacity: 1;
+        //opacity: 0;
+
+        &.sb2h{
+            bottom: (@barWidth + 0); left: 0; right: (0 + (@barWidth * 2));
+        }
+
+        &.sb2v{
+            bottom: (0 + @barWidth); top: 0; right:(@barWidth + 0);
+        }
+
+        &.inactive{
+            opacity: 0;
+            &.sb2h{
+                //bottom: -@barWidth;
+            }
+            &.sb2v{
+                //right: -@barWidth;
+            }
+        }
+    }
+
+    .sb2thumbs{
+        border-radius: @thumbSize / 2;
+        background: #AAA;
+        &.sb2h{
+            height: @thumbSize;
+        }
+
+        &.sb2v{
+            width: @thumbSize;
+        }
+    }
+}
+
+.hack{
+    transform: translateZ(0);
+    will-change: transform;
+}
+*/

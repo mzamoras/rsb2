@@ -1,0 +1,315 @@
+@componentName: classNamePlaceholder;
+
+@trackBg: fade(@track_color, @intensity/2*3);
+@trackBg_hover: fade(@track_hover_color, @intensity/1.25);
+@trackBg_active: fade(@track_active_color, @intensity/1.25);
+
+@thumbBg_ghost: fade(@thumb_color, @intensity * 3);
+@thumbBg_normal: fade(@thumb_color, @intensity * 7);
+@thumbBg_hover: fade(@thumb_hover_color, @intensity * 7);
+@thumbBg_active: fade(@thumb_active_color, @intensity * 7);
+
+@borderExpanded: fade(@track_color, (@intensity/2) * 3);
+@contrastColor: fade(@thumb_contrast_border_color, 30);
+
+@barWidth: 15px;
+@thumbSize: 8px;
+
+//TrackColors
+// *********************************************************
+
+@track_color: fade(black,10);
+@trackV_color: @track_color;
+@trackH_color: @track_color;
+@track_extended_color: @track_color;
+
+@track_hover_color: @track_color;
+@trackV_hover_color: @track_hover_color;
+@trackH_hover_color: @track_hover_color;
+
+
+@track_active_color: @track_color;
+@trackV_active_color: @track_active_color;
+@trackH_active_color: @track_active_color;
+
+
+//Transitions
+@bgTransitionSpeed: 550ms;
+
+//Thumbs Colors
+// *********************************************************
+@thumb_color: purple;
+@thumbV_color: @thumb_color;
+@thumbH_color: @thumb_color;
+
+@thumb_hover_color: @thumb_color;
+@thumbV_hover_color: @thumb_hover_color;
+@thumbH_hover_color: @thumb_hover_color;
+
+@thumb_active_color: @thumb_color;
+@thumbV_active_color: @thumb_active_color;
+@thumbH_active_color: @thumb_active_color;
+
+
+@delayedTransition: 150ms 400ms;
+@immediateTransition: 150ms 0ms;
+
+@import "variables";
+
+
+
+body.sb2-dragging{
+    &:extend( ._noSelectable );
+
+    .@{componentName} {
+
+        //Expandable tracks
+        &.sb2container.sb2-expand-tracks{
+
+            .sb2tracks:active{
+                .expandedTracks();
+            }
+        }
+
+    }
+}
+
+/**  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - **/
+
+.@{componentName} {
+
+    &::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+
+    .sb2view {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: scroll;
+        &:extend(.hack);
+
+        &::-webkit-scrollbar {
+            display: none !important;
+        }
+    }
+
+    /* I N I T I A L */
+    /**  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - **/
+    &.sb2container.initial{
+        .sb2tracks{
+            &.sb2h{
+                transition: none;
+            }
+            &.sb2v{
+                transition: none;
+            }
+        }
+
+        .sb2thumbs{
+            &.sb2h{
+                transition: none;
+            }
+            &.sb2v{
+                transition: none;
+            }
+        }
+    }
+
+    /* E X P A N D A B L E */
+    /**  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - **/
+    &.sb2container.sb2-expand-tracks{
+
+        .sb2thumbs {
+            transition: width @delayedTransition,
+                        height @delayedTransition;
+        }
+        .sb2tracks{
+
+            transition: padding @delayedTransition,
+                        border @delayedTransition,
+                        opacity @delayedTransition,
+                        background @delayedTransition,
+                        margin @delayedTransition;
+            &:hover{
+                transition: padding @immediateTransition,
+                            border @immediateTransition,
+                            opacity @immediateTransition,
+                            background @immediateTransition,
+                            margin @immediateTransition;
+                .expandedTracks();
+
+                .sb2thumbs {
+                    transition: width @immediateTransition,
+                                height @immediateTransition;
+                }
+            }
+        }
+    }
+
+    .sb2tracks {
+        position: absolute;
+
+        opacity: 1;
+
+        &.sb2init-hidden {  display: none; }
+
+        .track_elem( h, @trackH_color, @trackH_hover_color, @trackH_active_color);
+        .track_elem( v, @trackV_color, @trackV_hover_color, @trackV_active_color);
+
+    }
+
+
+    .sb2thumbs {
+
+        border-radius: @thumbSize / 2;
+
+        .thumb_elem( h, @thumbH_color, @thumbH_hover_color, @thumbH_active_color);
+        .thumb_elem( v, @thumbV_color, @thumbV_hover_color, @thumbV_active_color);
+    }
+
+    &.sb2container{
+        &.h-disabled{
+            .sb2view{
+                overflow-x: hidden;
+            }
+            .sb2tracks.sb2h{
+                display: none !important;
+            }
+        }
+
+        &.v-disabled{
+            .sb2view{
+                overflow-y: hidden;
+            }
+            .sb2tracks.sb2v{
+                display: none !important;
+            }
+        }
+    }
+}
+
+
+.track_elem(@element, @normal, @hover, @active){
+    &.sb2@{element} {
+
+        background-color: @normal;
+
+        & when (@element = h){
+            bottom: 0;
+            left: 0;
+            right: (0 + (@barWidth ) + 3);
+            border-top: 1px solid transparent;
+            padding: 2px 3px;
+        }
+
+        & when (@element = v){
+            bottom: 0;
+            top: 0;
+            right: 0;
+            border-left: 1px solid transparent;
+            padding: 3px 2px;
+        }
+
+        &:hover{
+            background: @hover;
+        }
+
+        &:active{
+            background: @active !important;
+        }
+
+        &.inactive {
+            opacity: 0;
+            &.sb2h when (@element = h){
+                bottom: -@barWidth;
+            }
+            &.sb2v when (@element = v){
+                right: -@barWidth;
+            }
+        }
+    }
+}
+
+.thumb_elem( @element, @normal, @hover, @active ){
+
+
+
+    &.sb2@{element} {
+
+        background: @normal;
+        //transition-delay: 300ms;
+
+        & when (@element = h){
+            transition: height @delayedTransition;
+            height: @thumbSize;
+        }
+
+        & when (@element = v){
+            transition: width @delayedTransition;
+            width: @thumbSize;
+        }
+
+        &:hover{
+            background: @hover;
+        }
+
+        &:active{
+            background: @active;
+        }
+    }
+}
+
+.expandedTracks(){
+    &.sb2v{
+        border-left:1px solid @track_extended_color;
+        background-color: @trackV_hover_color;
+        padding: 3px 5px;
+    }
+    &.sb2h{
+        border-top:1px solid @track_extended_color;
+        background-color: @trackH_hover_color;
+        padding: 5px 3px;
+    }
+
+    .sb2thumbs{
+        @expandDistance: 4;
+        border-radius: (@thumbSize + @expandDistance) / 2;
+        &.sb2v{
+            width: @thumbSize + @expandDistance;
+        }
+        &.sb2h{
+            height: @thumbSize + @expandDistance;
+        }
+    }
+}
+
+._defCursor {
+    cursor: default !important;
+}
+
+._noSelectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    &:extend( ._defCursor );
+}
+
+._noOutline {
+    outline: none 0 !important;
+    -moz-outline-style: none !important;
+}
+
+.hack {
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+
