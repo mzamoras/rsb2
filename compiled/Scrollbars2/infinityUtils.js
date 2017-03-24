@@ -310,6 +310,7 @@ var InfiniteScrollHandler = exports.InfiniteScrollHandler = function () {
 
         this.pastPosition = 0;
         this.positionDelta = 0;
+        console.log("--", this);
     }
 
     /** S E T T E R S  A N D   G E T T E R S **/
@@ -332,15 +333,23 @@ var InfiniteScrollHandler = exports.InfiniteScrollHandler = function () {
          */
         value: function calculateChunks() {
             var defaultChunkIndex = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-            var totalItems = this.totalItems;
-            var visibleItems = this.visibleItems;
-            var offset = this.offset;
+            var totalItems = this.totalItems,
+                visibleItems = this.visibleItems,
+                offset = this.offset;
 
+            var actualPerChunk = visibleItems + offset * 2;
 
-            var leftOvers = Math.ceil(totalItems % visibleItems);
-            var chunkSize = leftOvers <= offset ? Math.floor(totalItems / visibleItems) : Math.ceil(totalItems / visibleItems);
+            //const leftOvers = Math.ceil( totalItems % visibleItems );
+            var leftOvers = Math.ceil(totalItems % actualPerChunk);
+            //let chunkSize   = leftOvers <= offset ? Math.floor( totalItems / visibleItems ) : Math.ceil( totalItems / visibleItems );
+            //let chunkSize   = leftOvers <= offset ? Math.floor( totalItems / actualPerChunk ) : Math.ceil( totalItems / actualPerChunk );
+            var chunkSize = Math.ceil(totalItems / actualPerChunk);
             var index = 0;
             var newObject = null;
+
+            if (totalItems <= actualPerChunk) {
+                chunkSize = 0;
+            }
 
             while (index < chunkSize) {
                 newObject = new Chunk(index, chunkSize, totalItems, visibleItems, offset, leftOvers);
@@ -616,11 +625,9 @@ var InfiniteScrollHandler = exports.InfiniteScrollHandler = function () {
         value: function resizeGhostElement() {
             var direction = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'next';
 
-            var _ref = direction === 'next' ? this.currentChunkObj.distancesGoingNext() : this.currentChunkObj.distancesGoingPrevious();
-
-            var ghostTop = _ref.ghostTop;
-            var ghostBottom = _ref.ghostBottom;
-
+            var _ref = direction === 'next' ? this.currentChunkObj.distancesGoingNext() : this.currentChunkObj.distancesGoingPrevious(),
+                ghostTop = _ref.ghostTop,
+                ghostBottom = _ref.ghostBottom;
 
             this.ghostFixingHeight(ghostTop, ghostBottom);
         }
@@ -643,6 +650,7 @@ var InfiniteScrollHandler = exports.InfiniteScrollHandler = function () {
             //const difference = Math.abs( scrollTop - this.limitBottom  );
             // console.log( "change:",scrollTop - this.pastPosition );
             if (direction === 'down' && this.limitBottom <= scrollTop) {
+                //debugger;
                 console.log("%cDOWN:", "font-weight:bold; font-size:14px; color:red;", scrollTop - this.pastPosition);
                 //Probably when css is not loaded
                 if (this.viewportHg > this.bodyHg) {

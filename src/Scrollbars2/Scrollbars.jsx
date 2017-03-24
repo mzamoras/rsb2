@@ -22,6 +22,7 @@ import React from 'react';
 import * as styles from './basicStyles';
 import TinyEmitter from 'tiny-emitter';
 import classnames from 'classnames';
+import _throttle from 'lodash/throttle';
 
 import {
     ScrollDataManager,
@@ -50,7 +51,6 @@ export const Scrollbars2 = React.createClass( {
     /*** SETUP ***/
 
     setup(){
-
         this.emitter = new TinyEmitter();
 
         this._c    = this.refs['container'];
@@ -78,11 +78,14 @@ export const Scrollbars2 = React.createClass( {
         this.emitter.on( 'scroll:atRight', this.atRight );
 
         this.addListeners();
-
+        this.api = {};
+        this.exposeApiFunctions();
     },
 
     init(){
         this.scrollingManager.initialize();
+        //this.debouncedFunction = _debounce( this.testFunction2, 200 );
+        //this.debouncedOnScroll = _debounce( this.scrollingManager.onScroll, 50 );
 
         this.props.onMount( {
             containerView  : this.refs['container'],
@@ -93,18 +96,37 @@ export const Scrollbars2 = React.createClass( {
     },
 
     /*** API FUNCTIONS ***/
-    api(){
-        return {
-            toTop      : this.scrollingManager.toTop.bind( this.scrollingManager ),
-            toBottom   : this.scrollingManager.toBottom.bind( this.scrollingManager ),
-            toLeft     : this.scrollingManager.toLeft.bind( this.scrollingManager ),
-            toRight    : this.scrollingManager.toRight.bind( this.scrollingManager ),
-            enable     : this.scrollingManager.enable.bind( this.scrollingManager ),
-            disable    : this.scrollingManager.disable.bind( this.scrollingManager ),
-            cancelFlash: this.scrollingManager.cancelFlash.bind( this.scrollingManager ),
-            update     : this.update
-        }
+    exposeApiFunctions(){
+        this.api.toTop        = this.scrollingManager.toTop.bind( this.scrollingManager );
+        this.api.toBottom     = this.scrollingManager.toBottom.bind( this.scrollingManager );
+        this.api.toLeft       = this.scrollingManager.toLeft.bind( this.scrollingManager );
+        this.api.toRight      = this.scrollingManager.toRight.bind( this.scrollingManager );
+        this.api.enable       = this.scrollingManager.enable.bind( this.scrollingManager );
+        this.api.disable      = this.scrollingManager.disable.bind( this.scrollingManager );
+        this.api.cancelFlash  = this.scrollingManager.cancelFlash.bind( this.scrollingManager );
+        this.api.update       = this.update;
+        this.api.data         = this.scrollingManager.prepareExportableData();
+        this.api.getPositionY = () => this.scrollingManager.prepareExportableData().scrollTop;
+        this.api.getPositionX = () => this.scrollingManager.prepareExportableData().scrollLeft;
+
+        this.api_scrollPositionY = () => this.scrollDataManager.data.scrollTop;
+        this.api_scrollPositionX = () => this.scrollDataManager.data.scrollLeft;
     },
+
+
+
+    /*api(){
+     return {
+     toTop      : this.scrollingManager.toTop.bind( this.scrollingManager ),
+     toBottom   : this.scrollingManager.toBottom.bind( this.scrollingManager ),
+     toLeft     : this.scrollingManager.toLeft.bind( this.scrollingManager ),
+     toRight    : this.scrollingManager.toRight.bind( this.scrollingManager ),
+     enable     : this.scrollingManager.enable.bind( this.scrollingManager ),
+     disable    : this.scrollingManager.disable.bind( this.scrollingManager ),
+     cancelFlash: this.scrollingManager.cancelFlash.bind( this.scrollingManager ),
+     update     : this.update
+     }
+     },*/
 
     update(){
         this.scrollDataManager.update();
@@ -116,6 +138,7 @@ export const Scrollbars2 = React.createClass( {
     /*** LISTENERS  ***/
     addListeners(){
 
+        //this.throttledOnScroll = _throttle( this.onScroll,16 );
         this._view.addEventListener( 'scroll', this.onScroll, {
             passive: this.props.passiveEvent,
             capture: true
@@ -146,6 +169,10 @@ export const Scrollbars2 = React.createClass( {
         this._view.removeListener( 'wheel', this.onScroll, {
             capture: true
         } );
+    },
+
+    testFunction2(){
+        console.log( "MUST BE PRINTED ON EACH SCROLL" );
     },
 
     /*** SCROLL EVENTS ***/
@@ -179,6 +206,8 @@ export const Scrollbars2 = React.createClass( {
     },
 
     onScrollBarAndThumb( event ){
+        event.preventDefault();
+        event.stopPropagation();
         this.scrollingManager.onScrollBarAndThumb( event );
     },
 
@@ -245,7 +274,7 @@ export const Scrollbars2 = React.createClass( {
     },
 
     componentDidMount(){
-        this.apiFunctions  = ()=> this.api();
+        //this.apiFunctions  = ()=> this.api();
         const setupTimeout = setTimeout( () => {
             this.setup();
             this.init();

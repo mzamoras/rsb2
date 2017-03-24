@@ -672,8 +672,8 @@ export class DraggingManager {
         const { top }             = target.getBoundingClientRect();
 
         const { scrollHeight, thumbHeight } = this.data;
-        const clientHeight =  this.view.clientHeight;   //->read this values each time, they may have changed
-        const trackHeight  = target.offsetHeight;       //->read this values each time, they may have changed
+        const clientHeight                  = this.view.clientHeight;   //->read this values each time, they may have changed
+        const trackHeight                   = target.offsetHeight;       //->read this values each time, they may have changed
 
         const offset = Math.abs( top - clientY ) - thumbHeight / 2;
         return offset / (trackHeight - thumbHeight) * (scrollHeight - clientHeight);
@@ -684,8 +684,8 @@ export class DraggingManager {
         const { left }             = target.getBoundingClientRect();
 
         const { scrollWidth, thumbWidth } = this.data;
-        const clientWidth = this.view.clientWidth;   //->read this values each time, they may have changed
-        const trackWidth = target.offsetWidth;       //->read this values each time, they may have changed
+        const clientWidth                 = this.view.clientWidth;   //->read this values each time, they may have changed
+        const trackWidth                  = target.offsetWidth;       //->read this values each time, they may have changed
 
         const offset = Math.abs( left - clientX ) - thumbWidth / 2;
         return offset / (trackWidth - thumbWidth) * (scrollWidth - clientWidth);
@@ -698,6 +698,7 @@ export class ScrollingManager {
         const d = this.dataManager.data;
         const t = this.dataManager.thumbData;
         const m = this.movementManager.direction;
+
         return {
             scrollTop    : d.scrollTop,
             scrollLeft   : d.scrollLeft,
@@ -713,7 +714,8 @@ export class ScrollingManager {
             thumbWidthX  : d.thumbWidth,
             direction    : m.dir,
             axis         : m.axis,
-            thumbsData   : t
+            thumbsData   : t,
+            ...this.dataManager.data
         };
     }
 
@@ -768,7 +770,7 @@ export class ScrollingManager {
 
         this.changesManager.removeClass( this.cont, 'initial' );
 
-        const to = setTimeout( ()=> {
+        const to = setTimeout( () => {
 
             this.dataManager.update( true );
             this.initializeX();
@@ -821,7 +823,7 @@ export class ScrollingManager {
     }
 
     /*** Events ***/
-    onScroll( event ) {
+    onScroll( event) {
         this.callOnScrollProps();
         this.dataManager.update( false, event );
         this.movementManager.setEvent( event );
@@ -872,13 +874,14 @@ export class ScrollingManager {
         return (target === this.tY || target === this.tnY)
             ? VER
             : (target === this.tX || target === this.tnX)
-            ? HOR
-            : NONE;
+                ? HOR
+                : NONE;
     }
 
-    onScrollBarAndThumb( event ) {
+    onScrollBarAndThumb(  ) {
         event.preventDefault();
         this.movementManager.setEvent( event, true );
+
         const { dx, dy, isX, isY }      = this.movementManager.direction;
         const { scrollTop, scrollLeft } = this.dataManager.values;
 
@@ -991,7 +994,7 @@ export class ScrollingManager {
     flashBars( useDelay = false ) {
         const { flashableTrackX, flashableTrackY } = this.dataManager.values;
 
-        const flash = setTimeout( ()=> {
+        const flash = setTimeout( () => {
 
             if ( flashableTrackX ) this.showBar( HOR, true );
             if ( flashableTrackX ) this.showBar( HOR );
@@ -1001,7 +1004,7 @@ export class ScrollingManager {
 
             if ( !this.props.autoHide ) return;
 
-            this.flashTimeout = setTimeout( ()=> {
+            this.flashTimeout = setTimeout( () => {
 
                 clearTimeout( this.flashTimeout );
                 if ( flashableTrackX && !this.mouseOverX ) this.hideBar( HOR );
@@ -1167,7 +1170,6 @@ export class StyleManager {
         this.namespace   = (namespace || '').toLowerCase() || this.id;
         this.preExisted  = true;
         this.currentNode = document.getElementById( this.id ) || this.createDomNode();
-        //this.origin      = null;
 
         this.rex = {
             placeholder: /classNamePlaceholder/gm,

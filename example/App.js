@@ -85,11 +85,12 @@ const App = React.createClass( {
                     <div>{this.state.message}</div>
                 </div>
 
-                <InfiniteList className="card-container" setMessage={this.setData}
+                <InfiniteList totalItems={cardsLocal.length} className="card-container" setMessage={this.setData}
                               style={{ border }}
                               items={cardsLocal}
                               visibles={15}
                               offset={10}
+                              defaultRowHeight={150}
                               renderFunc={this.itemRender}
                 />
 

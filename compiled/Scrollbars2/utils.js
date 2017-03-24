@@ -4,6 +4,8 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -497,11 +499,11 @@ var MovementManager = exports.MovementManager = function () {
         value: function edgeChecker() {
 
             var dir = this.direction.dir;
-            var _dataManager = this.dataManager;
-            var atTop = _dataManager.atTop;
-            var atBottom = _dataManager.atBottom;
-            var atLeft = _dataManager.atLeft;
-            var atRight = _dataManager.atRight;
+            var _dataManager = this.dataManager,
+                atTop = _dataManager.atTop,
+                atBottom = _dataManager.atBottom,
+                atLeft = _dataManager.atLeft,
+                atRight = _dataManager.atRight;
 
 
             if (!atTop && !atBottom) {
@@ -666,17 +668,15 @@ var DraggingManager = exports.DraggingManager = function () {
         value: function onDragStart(event) {
             event.stopPropagation();
 
-            var target = event.target;
-            var clientY = event.clientY;
-            var clientX = event.clientX;
-            var offsetHeight = target.offsetHeight;
-            var offsetWidth = target.offsetWidth;
+            var target = event.target,
+                clientY = event.clientY,
+                clientX = event.clientX;
+            var offsetHeight = target.offsetHeight,
+                offsetWidth = target.offsetWidth;
 
-            var _target$getBoundingCl = target.getBoundingClientRect();
-
-            var top = _target$getBoundingCl.top;
-            var left = _target$getBoundingCl.left;
-
+            var _target$getBoundingCl = target.getBoundingClientRect(),
+                top = _target$getBoundingCl.top,
+                left = _target$getBoundingCl.left;
 
             this.dragging = true;
             this.direction = target === this.tnY ? VER : HOR;
@@ -689,19 +689,18 @@ var DraggingManager = exports.DraggingManager = function () {
     }, {
         key: 'onDrag',
         value: function onDrag(event) {
-            var clientX = event.clientX;
-            var clientY = event.clientY;
+            var clientX = event.clientX,
+                clientY = event.clientY;
 
-            var _tY$getBoundingClient = this.tY.getBoundingClientRect();
+            var _tY$getBoundingClient = this.tY.getBoundingClientRect(),
+                top = _tY$getBoundingClient.top;
 
-            var top = _tY$getBoundingClient.top;
+            var _tX$getBoundingClient = this.tX.getBoundingClientRect(),
+                left = _tX$getBoundingClient.left;
 
-            var _tX$getBoundingClient = this.tX.getBoundingClientRect();
-
-            var left = _tX$getBoundingClient.left;
-            var _data = this.data;
-            var thumbHeight = _data.thumbHeight;
-            var thumbWidth = _data.thumbWidth;
+            var _data = this.data,
+                thumbHeight = _data.thumbHeight,
+                thumbWidth = _data.thumbWidth;
 
 
             var clickPositionY = thumbHeight - this.prevPositionY;
@@ -735,20 +734,20 @@ var DraggingManager = exports.DraggingManager = function () {
     }, {
         key: 'getScrollTopForOffset',
         value: function getScrollTopForOffset(offset) {
-            var _scrollDataManager$va = this.scrollDataManager.values;
-            var scrollHeight = _scrollDataManager$va.scrollHeight;
-            var thumbHeight = _scrollDataManager$va.thumbHeight;
-            var clientHeight = _scrollDataManager$va.clientHeight; //keeps the data updated
+            var _scrollDataManager$va = this.scrollDataManager.values,
+                scrollHeight = _scrollDataManager$va.scrollHeight,
+                thumbHeight = _scrollDataManager$va.thumbHeight,
+                clientHeight = _scrollDataManager$va.clientHeight; //keeps the data updated
 
             return offset / (clientHeight - thumbHeight) * (scrollHeight - clientHeight);
         }
     }, {
         key: 'getScrollLeftForOffset',
         value: function getScrollLeftForOffset(offset) {
-            var _scrollDataManager$va2 = this.scrollDataManager.values;
-            var scrollWidth = _scrollDataManager$va2.scrollWidth;
-            var clientWidth = _scrollDataManager$va2.clientWidth;
-            var thumbWidth = _scrollDataManager$va2.thumbWidth; //keeps the data updated
+            var _scrollDataManager$va2 = this.scrollDataManager.values,
+                scrollWidth = _scrollDataManager$va2.scrollWidth,
+                clientWidth = _scrollDataManager$va2.clientWidth,
+                thumbWidth = _scrollDataManager$va2.thumbWidth; //keeps the data updated
 
             return offset / (clientWidth - thumbWidth) * (scrollWidth - clientWidth);
         }
@@ -763,15 +762,15 @@ var DraggingManager = exports.DraggingManager = function () {
     }, {
         key: 'getScrollTopForClickOffset',
         value: function getScrollTopForClickOffset(event) {
-            var target = event.target;
-            var clientY = event.clientY;
+            var target = event.target,
+                clientY = event.clientY;
 
-            var _target$getBoundingCl2 = target.getBoundingClientRect();
+            var _target$getBoundingCl2 = target.getBoundingClientRect(),
+                top = _target$getBoundingCl2.top;
 
-            var top = _target$getBoundingCl2.top;
-            var _data2 = this.data;
-            var scrollHeight = _data2.scrollHeight;
-            var thumbHeight = _data2.thumbHeight;
+            var _data2 = this.data,
+                scrollHeight = _data2.scrollHeight,
+                thumbHeight = _data2.thumbHeight;
 
             var clientHeight = this.view.clientHeight; //->read this values each time, they may have changed
             var trackHeight = target.offsetHeight; //->read this values each time, they may have changed
@@ -782,15 +781,15 @@ var DraggingManager = exports.DraggingManager = function () {
     }, {
         key: 'getScrollLeftForClickOffset',
         value: function getScrollLeftForClickOffset(event) {
-            var target = event.target;
-            var clientX = event.clientX;
+            var target = event.target,
+                clientX = event.clientX;
 
-            var _target$getBoundingCl3 = target.getBoundingClientRect();
+            var _target$getBoundingCl3 = target.getBoundingClientRect(),
+                left = _target$getBoundingCl3.left;
 
-            var left = _target$getBoundingCl3.left;
-            var _data3 = this.data;
-            var scrollWidth = _data3.scrollWidth;
-            var thumbWidth = _data3.thumbWidth;
+            var _data3 = this.data,
+                scrollWidth = _data3.scrollWidth,
+                thumbWidth = _data3.thumbWidth;
 
             var clientWidth = this.view.clientWidth; //->read this values each time, they may have changed
             var trackWidth = target.offsetWidth; //->read this values each time, they may have changed
@@ -810,7 +809,8 @@ var ScrollingManager = exports.ScrollingManager = function () {
             var d = this.dataManager.data;
             var t = this.dataManager.thumbData;
             var m = this.movementManager.direction;
-            return {
+
+            return _extends({
                 scrollTop: d.scrollTop,
                 scrollLeft: d.scrollLeft,
                 scrollHeight: d.scrollHeight,
@@ -826,7 +826,7 @@ var ScrollingManager = exports.ScrollingManager = function () {
                 direction: m.dir,
                 axis: m.axis,
                 thumbsData: t
-            };
+            }, this.dataManager.data);
         }
     }, {
         key: 'debouncedOnScrollProps',
@@ -906,10 +906,10 @@ var ScrollingManager = exports.ScrollingManager = function () {
         key: 'initializeX',
         value: function initializeX() {
             var availableTrackX = this.dataManager.values.availableTrackX;
-            var _props = this.props;
-            var flashTime = _props.flashTime;
-            var flashTimeDelay = _props.flashTimeDelay;
-            var autoHide = _props.autoHide;
+            var _props = this.props,
+                flashTime = _props.flashTime,
+                flashTimeDelay = _props.flashTimeDelay,
+                autoHide = _props.autoHide;
 
             var startHidden = flashTime > 0 && flashTimeDelay > 0 && autoHide || autoHide && !flashTime;
 
@@ -929,10 +929,10 @@ var ScrollingManager = exports.ScrollingManager = function () {
         key: 'initializeY',
         value: function initializeY() {
             var availableTrackY = this.dataManager.values.availableTrackY;
-            var _props2 = this.props;
-            var flashTime = _props2.flashTime;
-            var flashTimeDelay = _props2.flashTimeDelay;
-            var autoHide = _props2.autoHide;
+            var _props2 = this.props,
+                flashTime = _props2.flashTime,
+                flashTimeDelay = _props2.flashTimeDelay,
+                autoHide = _props2.autoHide;
 
             var startHidden = flashTime > 0 && flashTimeDelay > 0 && autoHide || autoHide && !flashTime;
 
@@ -1009,17 +1009,18 @@ var ScrollingManager = exports.ScrollingManager = function () {
         }
     }, {
         key: 'onScrollBarAndThumb',
-        value: function onScrollBarAndThumb(event) {
+        value: function onScrollBarAndThumb() {
             event.preventDefault();
             this.movementManager.setEvent(event, true);
-            var _movementManager$dire = this.movementManager.direction;
-            var dx = _movementManager$dire.dx;
-            var dy = _movementManager$dire.dy;
-            var isX = _movementManager$dire.isX;
-            var isY = _movementManager$dire.isY;
-            var _dataManager$values = this.dataManager.values;
-            var scrollTop = _dataManager$values.scrollTop;
-            var scrollLeft = _dataManager$values.scrollLeft;
+
+            var _movementManager$dire = this.movementManager.direction,
+                dx = _movementManager$dire.dx,
+                dy = _movementManager$dire.dy,
+                isX = _movementManager$dire.isX,
+                isY = _movementManager$dire.isY;
+            var _dataManager$values = this.dataManager.values,
+                scrollTop = _dataManager$values.scrollTop,
+                scrollLeft = _dataManager$values.scrollLeft;
 
 
             if (isY) {
@@ -1052,9 +1053,9 @@ var ScrollingManager = exports.ScrollingManager = function () {
     }, {
         key: 'showBars',
         value: function showBars() {
-            var _dataManager$values2 = this.dataManager.values;
-            var displayableTrackX = _dataManager$values2.displayableTrackX;
-            var displayableTrackY = _dataManager$values2.displayableTrackY;
+            var _dataManager$values2 = this.dataManager.values,
+                displayableTrackX = _dataManager$values2.displayableTrackX,
+                displayableTrackY = _dataManager$values2.displayableTrackY;
 
 
             if (displayableTrackX) {
@@ -1148,9 +1149,9 @@ var ScrollingManager = exports.ScrollingManager = function () {
             var _this5 = this;
 
             var useDelay = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-            var _dataManager$values3 = this.dataManager.values;
-            var flashableTrackX = _dataManager$values3.flashableTrackX;
-            var flashableTrackY = _dataManager$values3.flashableTrackY;
+            var _dataManager$values3 = this.dataManager.values,
+                flashableTrackX = _dataManager$values3.flashableTrackX,
+                flashableTrackY = _dataManager$values3.flashableTrackY;
 
 
             var flash = setTimeout(function () {
@@ -1313,10 +1314,10 @@ var VisualChangesManager = exports.VisualChangesManager = function () {
             while (this.visualChanges.length > 0 && this.scrolling) {
                 var currentChange = this.visualChanges.shift();
 
-                var object = currentChange.object;
-                var cssProperty = currentChange.cssProperty;
-                var value = currentChange.value;
-                var action = currentChange.action;
+                var object = currentChange.object,
+                    cssProperty = currentChange.cssProperty,
+                    value = currentChange.value,
+                    action = currentChange.action;
 
 
                 if (cssProperty === 'class') {
@@ -1363,7 +1364,6 @@ var StyleManager = exports.StyleManager = function () {
         this.namespace = (namespace || '').toLowerCase() || this.id;
         this.preExisted = true;
         this.currentNode = document.getElementById(this.id) || this.createDomNode();
-        //this.origin      = null;
 
         this.rex = {
             placeholder: /classNamePlaceholder/gm,

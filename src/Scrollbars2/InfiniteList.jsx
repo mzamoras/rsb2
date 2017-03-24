@@ -1,119 +1,237 @@
-import React from 'react';
+//noinspection JSUnresolvedVariable
+import React, {Component, PropTypes} from 'react';
 import shallowEqual from 'shallowequal';
 import {Scrollbars2} from '../index';
-import {InfiniteScrollHandler, debounce} from './infinityUtils';
-const clog = console.log;
-const InfiniteList = React.createClass( {
+import autobind from 'react-autobind-helper';
+import {List, Iterable} from 'immutable';
 
+class InfiniteList extends Component {
 
-    /** C O M P O N E N T   B A S I C S **/
+    constructor( props ) {
+
+        super( props );
+        autobind( this );
+
+        this.listenScroll = false;
+        console.log( props.items );
+        this.state        = {
+            ...this.resetPagesObject( props )
+        };
+    }
+
+    /** C A L C U L A T I O N S **/
     /** ************************************************* **/
 
-    setOffStateVariables( givenProps ){
-        const { items, offset, visibles } = givenProps;
+    resetPagesObject( props ) {
 
-        this.lastScrollTop = null;
-        this.sbh           = new InfiniteScrollHandler( items.length, visibles, 1, offset );
-    },
-
-    setComponentVariables(){
-        this.ghostStyle = { textAlign: 'right', border: '1px solid green', height:0 }
-    },
-
-    getInitialState(){
-        this.setComponentVariables();
-        this.setOffStateVariables(this.props);
+        this.listenScroll = false;
+        const length      = Iterable.isIterable( props.items ) ? props.items.size : props.items.length;
+        this.totalPages   = Math.ceil( length / props.visibles );
+        this.leftOvers    = length % props.visibles;
 
         return {
-            items      : this.props.items,
-            initialized: null,
-        };
-    },
+            pagesData          : new List().setSize( this.totalPages ).map( ( x, y ) => this.createPagesObject( y, props ) ),
+            currentPage        : 0,
+            ghostHeightExpected: props.defaultRowHeight * length,
+            ghostHeight        : props.defaultRowHeight * length,
+            itemsHeight        : props.defaultRowHeight * length,
+        }
+    }
 
-    updateMetrics( update = true ){
-        const { itemsContainer, ghostViewTop, ghostViewBottom } = this.refs;
-        this.sbh.setExternalObjects( itemsContainer, ghostViewTop, ghostViewBottom );
-        if(update) this.forceUpdate();
-    },
+    createPagesObject( page, props ) {
 
-    onScrollFrame( { scrollTop, direction } ){
-        //console.log(scrollTop);
-        //if( this.lastScrollTop === scrollTop ) return;
+        const { visibles, defaultRowHeight } = props;
 
-        this.lastScrollTop = scrollTop;
-        this.sbh.evaluatePosition( scrollTop, direction );
-        if ( this.sbh.needStateUpdate ) {
-            this.forceUpdate();
+        const length          = Iterable.isIterable( props.items ) ? props.items.size : props.items.length;
+        const isLast          = page === this.totalPages - 1;
+        const from            = page * visibles;
+        const to              = Math.min( from + visibles, length );
+        const estimatedHeight = visibles * defaultRowHeight;
+        const height          = isLast && this.leftOvers > 0 ? this.leftOvers * defaultRowHeight : estimatedHeight;
+
+        return {
+            page, from, to, height,
+            key        : 'Page' + page,
+            cssClass   : 'infinityPage page' + page,
+            limitTop   : -1,
+            limitBottom: 1000000000 * 100000000,
+            initialized: false
+        }
+    }
+
+    calculateLimits() {
+        const { currentPage, pagesData } = this.state;
+        const { itemsContainerRef }      = this.refs;
+        const currentPageData            = pagesData.get( currentPage );
+        const currentPageDomObj          = this.refs['Page' + currentPage];
+
+        if ( currentPageData && currentPageDomObj && currentPageData.initialized === false ) {
+
+            const { offsetHeight, offsetTop } = currentPageDomObj;
+
+            const ghostHeight = pagesData.reduce( ( acc, obj ) => {
+                return acc + obj.height
+            }, 0 );
+
+            this.setState( {
+                ghostHeight: ghostHeight,
+                pagesData  : pagesData.update( currentPage, val => ({
+                    ...val,
+                    height     : offsetHeight,
+                    limitTop   : offsetTop,
+                    limitBottom: offsetTop + offsetHeight,
+                    initialized: true,
+                }) ),
+                itemsHeight: itemsContainerRef.offsetHeight
+            }, this.enableScrollListening );
+        }
+    }
+
+    enableScrollListening() {
+        this.listenScroll = true;
+    }
+
+    disableScrollListening() {
+        this.listenScroll = false;
+    }
+
+    /** E V E N T S **/
+    /** ************************************************* **/
+    onScrollFrame( { scrollTop, direction, clientHeight, realMovY } ) {
+
+        if ( !this.listenScroll || !this.state.pagesData.get( this.state.currentPage ) ) return;
+
+
+        const { currentPage, pagesData }              = this.state;
+        const { defaultRowHeight, visibles }          = this.props;
+        const { limitTop, limitBottom, height }       = pagesData.get( currentPage );
+
+        const fixedScrollTop = scrollTop + clientHeight;
+        const nextPage       = currentPage + 1;
+        const prevPage       = currentPage - 1;
+        const isDown         = direction === 'down';
+        const isUp           = direction === 'up';
+        const isBigMove      = Math.abs( realMovY ) > height;
+
+
+        //When Scroll moves big distances
+        if ( isBigMove ) {
+            const midList     = pagesData.size / 2;
+            const tgtPageCalc = ( fixedScrollTop / defaultRowHeight / visibles );
+            const tgtPage     = tgtPageCalc > midList ? Math.round( tgtPageCalc ) : Math.floor( tgtPageCalc );
+
+            this.disableScrollListening();
+            this.setState( { currentPage: tgtPage }, this.enableScrollListening );
+            return;
         }
 
-        /*const log = "[%s]Scrolltop: %s | LimitBottom: %s | LimitTop: %s | Height: %s | GhostTopHeight: %s |GhostBottomHeight: %s";
-        clog( log , this.sbh.currentChunkIndx ,scrollTop, this.sbh.limitBottom, this.sbh.limitTop,
-            this.sbh.itemsContainerHg, this.sbh.ghostTopHg, this.sbh.ghostBottomHg
-        );*/
-    },
 
-
-    shouldComponentUpdate(){
-        return true;
-    },
-
-    componentWillUpdate(nextProps){
-        if( !shallowEqual(this.props.items,nextProps.items ) ){
-            this.setOffStateVariables(nextProps);
+        if ( fixedScrollTop > limitBottom + 1 && isDown && nextPage < pagesData.size ) {
+            this.disableScrollListening();
+            this.setState( { currentPage: nextPage }, this.enableScrollListening );
         }
 
-    },
-    componentDidUpdate(prevProps){
-        if ( this.sbh.needsUpdate ) {
-            this.sbh.update();
+
+        if ( fixedScrollTop < limitTop - 1 && isUp && prevPage >= 0 ) {
+            this.disableScrollListening();
+            this.setState( { currentPage: prevPage }, this.enableScrollListening );
         }
-        //console.log( "did items changed?",!shallowEqual(this.props.items, prevProps.items), this.sbh );
-        //console.timeEnd('Infinite');
-        if( !shallowEqual(this.props.items,prevProps.items ) ){
-            this.lastScrollTop = null;
-            this.updateMetrics();
-            //console.log("%cItems Changed!!", "font-size:14px;font-weight:bold;",this.sbh);
+
+    }
+
+    /** L I F E C Y C L E **/
+    /** ************************************************* **/
+
+    componentWillUpdate( nextProps ) {
+
+        //When the number of items has changed
+        if ( !shallowEqual( this.props.items, nextProps.items ) ) {
+
+            const { scrollbarsRef }     = this.refs;
+            const recalculatedState     = this.resetPagesObject( nextProps, false );
+
+            this.disableScrollListening();
+
+            this.setState( { ...recalculatedState, currentPage: 0 }, () => {
+                if ( !scrollbarsRef ) return;
+                scrollbarsRef.update();
+                scrollbarsRef.api.toTop();
+                this.enableScrollListening()
+            } );
         }
-    },
+    }
 
-    /*componentWillUpdate(nextProps){
+    componentDidMount() {
+        this.calculateLimits();
+    }
 
-    },*/
+    componentDidUpdate() {
+        this.calculateLimits();
+    }
 
-    componentDidMount(){
-        this.updateMetricsDebounced = debounce( this.updateMetrics, 1 );
-        this.updateMetricsDebounced();
-    },
 
     /** R E N D E R S **/
     /** ************************************************* **/
-    render(){
-        this.sbh.reportRendering();
-        const { init, end }  = this.sbh;
 
-        const visibleItems = this.props.items.slice( init, end ).map( ( obj, index )=> {
-            return this.props.renderFunc( obj, index );
-        } );
-        console.log("SHOWING FROM %s to %s out of %s", init, end,visibleItems.length );
+    renderItems( slicedItems ) {
+        if ( Iterable.isIterable( this.props.items ) ) {
+            return slicedItems.entrySeq().map( this.renderItemsSimple );
+        }
+        return slicedItems.map( this.renderItemsSimple );
+    }
+
+    renderItemsSimple( x, y ) {
+        const isIterable = Iterable.isIterable( this.props.items );
+        const object     = isIterable ? x[1] : x;
+        const index      = isIterable ? x[0] : y;
+
         return (
-            <Scrollbars2 onScrollFrame={this.onScrollFrame} thumbMinSize={30}>
-                <div className="ghostViewTop" ref="ghostViewTop" style={{ ...this.ghostStyle }} />
-                <div ref="itemsContainer" style={{ ...this.props.style, position:'relative'}}
-                     className={this.props.className} >
-                    {visibleItems}
+            <div className={'itemWrapper itemWrapper' + index } key={'item_' + index} >
+                {this.props.renderFunc( object, index )}
+            </div>
+        );
+    }
+
+    render() {
+
+        const { currentPage, pagesData, itemsHeight, ghostHeight }   = this.state;
+
+        return (
+            <Scrollbars2 onScrollFrame={this.onScrollFrame} thumbMinSize={30} ref="scrollbarsRef" >
+                <div className="items" ref='itemsContainerRef' style={{ position: 'absolute', width: '100%' }} >
+
+                    { pagesData.map( ( object ) => {
+
+                        const { page, from, to, key, cssClass, height } = object;
+
+                        const isRenderable = page >= currentPage - 1 && page <= currentPage + 1;
+                        const pageStyle    = isRenderable ? {} : { height };
+                        const pageItems    = isRenderable ? this.props.items.slice( from, to ) : null;
+                        const className    = cssClass + ( isRenderable ? " renderable" : "" );
+
+                        return (
+                            <div key={key} ref={key} className={className} style={pageStyle} >
+                                {isRenderable ? this.renderItems( pageItems ) : pageItems}
+                            </div>
+                        );
+
+                    } ) }
+
                 </div>
-                <div className="ghostViewBottom" ref="ghostViewBottom" style={{ ...this.ghostStyle }} />
+                <div ref='ghost' className="ghost"
+                     style={{ height: Math.min( itemsHeight, ghostHeight ) }} />
             </Scrollbars2>
         );
     }
-} );
 
-InfiniteList.defaultProps = {};
-InfiniteList.propTypes    = {
-    items     : React.PropTypes.any,
-    visibles  : React.PropTypes.number,
-    offset    : React.PropTypes.number,
-    renderFunc: React.PropTypes.func,
-};
+    static propTypes = {
+        items           : PropTypes.any.isRequired,
+        visibles        : PropTypes.number,
+        offset          : PropTypes.number,
+        renderFunc      : PropTypes.func.isRequired,
+        defaultRowHeight: PropTypes.number.isRequired,
+        totalItems      : PropTypes.number.isRequired,
+    }
+}
 
 export default InfiniteList;

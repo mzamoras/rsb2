@@ -41,6 +41,10 @@ var _classnames = require('classnames');
 
 var _classnames2 = _interopRequireDefault(_classnames);
 
+var _throttle2 = require('lodash/throttle');
+
+var _throttle3 = _interopRequireDefault(_throttle2);
+
 var _utils = require('./utils');
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
@@ -72,7 +76,6 @@ var Scrollbars2 = exports.Scrollbars2 = _react2.default.createClass({
     /*** SETUP ***/
 
     setup: function setup() {
-
         this.emitter = new _tinyEmitter2.default();
 
         this._c = this.refs['container'];
@@ -99,9 +102,13 @@ var Scrollbars2 = exports.Scrollbars2 = _react2.default.createClass({
         this.emitter.on('scroll:atRight', this.atRight);
 
         this.addListeners();
+        this.api = {};
+        this.exposeApiFunctions();
     },
     init: function init() {
         this.scrollingManager.initialize();
+        //this.debouncedFunction = _debounce( this.testFunction2, 200 );
+        //this.debouncedOnScroll = _debounce( this.scrollingManager.onScroll, 50 );
 
         this.props.onMount({
             containerView: this.refs['container'],
@@ -113,18 +120,47 @@ var Scrollbars2 = exports.Scrollbars2 = _react2.default.createClass({
 
 
     /*** API FUNCTIONS ***/
-    api: function api() {
-        return {
-            toTop: this.scrollingManager.toTop.bind(this.scrollingManager),
-            toBottom: this.scrollingManager.toBottom.bind(this.scrollingManager),
-            toLeft: this.scrollingManager.toLeft.bind(this.scrollingManager),
-            toRight: this.scrollingManager.toRight.bind(this.scrollingManager),
-            enable: this.scrollingManager.enable.bind(this.scrollingManager),
-            disable: this.scrollingManager.disable.bind(this.scrollingManager),
-            cancelFlash: this.scrollingManager.cancelFlash.bind(this.scrollingManager),
-            update: this.update
+    exposeApiFunctions: function exposeApiFunctions() {
+        var _this = this;
+
+        this.api.toTop = this.scrollingManager.toTop.bind(this.scrollingManager);
+        this.api.toBottom = this.scrollingManager.toBottom.bind(this.scrollingManager);
+        this.api.toLeft = this.scrollingManager.toLeft.bind(this.scrollingManager);
+        this.api.toRight = this.scrollingManager.toRight.bind(this.scrollingManager);
+        this.api.enable = this.scrollingManager.enable.bind(this.scrollingManager);
+        this.api.disable = this.scrollingManager.disable.bind(this.scrollingManager);
+        this.api.cancelFlash = this.scrollingManager.cancelFlash.bind(this.scrollingManager);
+        this.api.update = this.update;
+        this.api.data = this.scrollingManager.prepareExportableData();
+        this.api.getPositionY = function () {
+            return _this.scrollingManager.prepareExportableData().scrollTop;
+        };
+        this.api.getPositionX = function () {
+            return _this.scrollingManager.prepareExportableData().scrollLeft;
+        };
+
+        this.api_scrollPositionY = function () {
+            return _this.scrollDataManager.data.scrollTop;
+        };
+        this.api_scrollPositionX = function () {
+            return _this.scrollDataManager.data.scrollLeft;
         };
     },
+
+
+    /*api(){
+     return {
+     toTop      : this.scrollingManager.toTop.bind( this.scrollingManager ),
+     toBottom   : this.scrollingManager.toBottom.bind( this.scrollingManager ),
+     toLeft     : this.scrollingManager.toLeft.bind( this.scrollingManager ),
+     toRight    : this.scrollingManager.toRight.bind( this.scrollingManager ),
+     enable     : this.scrollingManager.enable.bind( this.scrollingManager ),
+     disable    : this.scrollingManager.disable.bind( this.scrollingManager ),
+     cancelFlash: this.scrollingManager.cancelFlash.bind( this.scrollingManager ),
+     update     : this.update
+     }
+     },*/
+
     update: function update() {
         this.scrollDataManager.update();
         this.scrollingManager.initializeX();
@@ -135,6 +171,7 @@ var Scrollbars2 = exports.Scrollbars2 = _react2.default.createClass({
     /*** LISTENERS  ***/
     addListeners: function addListeners() {
 
+        //this.throttledOnScroll = _throttle( this.onScroll,16 );
         this._view.addEventListener('scroll', this.onScroll, {
             passive: this.props.passiveEvent,
             capture: true
@@ -166,6 +203,9 @@ var Scrollbars2 = exports.Scrollbars2 = _react2.default.createClass({
             capture: true
         });
     },
+    testFunction2: function testFunction2() {
+        console.log("MUST BE PRINTED ON EACH SCROLL");
+    },
 
 
     /*** SCROLL EVENTS ***/
@@ -194,6 +234,8 @@ var Scrollbars2 = exports.Scrollbars2 = _react2.default.createClass({
         this.props.atRight();
     },
     onScrollBarAndThumb: function onScrollBarAndThumb(event) {
+        event.preventDefault();
+        event.stopPropagation();
         this.scrollingManager.onScrollBarAndThumb(event);
     },
 
@@ -216,9 +258,9 @@ var Scrollbars2 = exports.Scrollbars2 = _react2.default.createClass({
     /*** COMPONENT LIFECYCLE ***/
 
     componentWillMount: function componentWillMount() {
-        var _props = this.props;
-        var cssStyleClass = _props.cssStyleClass;
-        var cssStylesheetID = _props.cssStylesheetID;
+        var _props = this.props,
+            cssStyleClass = _props.cssStyleClass,
+            cssStylesheetID = _props.cssStylesheetID;
 
 
         var isDefaultStyle = cssStyleClass === CSS_CLASS;
@@ -256,14 +298,12 @@ var Scrollbars2 = exports.Scrollbars2 = _react2.default.createClass({
         };
     },
     componentDidMount: function componentDidMount() {
-        var _this = this;
+        var _this2 = this;
 
-        this.apiFunctions = function () {
-            return _this.api();
-        };
+        //this.apiFunctions  = ()=> this.api();
         var setupTimeout = setTimeout(function () {
-            _this.setup();
-            _this.init();
+            _this2.setup();
+            _this2.init();
             clearTimeout(setupTimeout);
         }, 100);
     },

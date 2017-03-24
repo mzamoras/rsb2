@@ -25,20 +25,20 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 var innerWidth = function innerWidth(elem) {
     var computedSt = getComputedStyle(elem);
     var clientWidth = elem.clientWidth;
-    var paddingLeft = computedSt.paddingLeft;
-    var paddingRight = computedSt.paddingRight;
-    var borderLeftWidth = computedSt.borderLeftWidth;
-    var borderRightWidth = computedSt.borderRightWidth;
+    var paddingLeft = computedSt.paddingLeft,
+        paddingRight = computedSt.paddingRight;
+    var borderLeftWidth = computedSt.borderLeftWidth,
+        borderRightWidth = computedSt.borderRightWidth;
 
     return clientWidth - parseFloat(paddingLeft) - parseFloat(paddingRight) - parseFloat(borderLeftWidth) - parseFloat(borderRightWidth);
 };
 var innerHeight = function innerHeight(elem) {
     var computedSt = getComputedStyle(elem);
     var clientHeight = elem.clientHeight;
-    var paddingTop = computedSt.paddingTop;
-    var paddingBottom = computedSt.paddingBottom;
-    var borderBottomWidth = computedSt.borderBottomWidth;
-    var borderTopWidth = computedSt.borderTopWidth;
+    var paddingTop = computedSt.paddingTop,
+        paddingBottom = computedSt.paddingBottom;
+    var borderBottomWidth = computedSt.borderBottomWidth,
+        borderTopWidth = computedSt.borderTopWidth;
 
     return clientHeight - parseFloat(paddingTop) - parseFloat(paddingBottom) - parseFloat(borderTopWidth) - parseFloat(borderBottomWidth);
 };
@@ -65,16 +65,16 @@ var thumbPosX = function thumbPosX(elem, trackWidth, thumbSize) {
 
 /* C O N T E N T   P O S I T I O N */
 var posY = function posY(event, dataSource) {
-    var target = event.target;
-    var clientY = event.clientY;
+    var target = event.target,
+        clientY = event.clientY;
 
-    var _target$getBoundingCl = target.getBoundingClientRect();
+    var _target$getBoundingCl = target.getBoundingClientRect(),
+        targetTop = _target$getBoundingCl.top;
 
-    var targetTop = _target$getBoundingCl.top;
-    var scrollHeight = dataSource.scrollHeight;
-    var clientHeight = dataSource.clientHeight;
-    var thumbHeight = dataSource.thumbHeight;
-    var trackHeight = dataSource.trackHeight;
+    var scrollHeight = dataSource.scrollHeight,
+        clientHeight = dataSource.clientHeight,
+        thumbHeight = dataSource.thumbHeight,
+        trackHeight = dataSource.trackHeight;
 
 
     var offset = Math.abs(targetTop - clientY) - thumbHeight / 2;
@@ -82,16 +82,16 @@ var posY = function posY(event, dataSource) {
 };
 
 var posX = function posX(event, dataSource) {
-    var target = event.target;
-    var clientX = event.clientX;
+    var target = event.target,
+        clientX = event.clientX;
 
-    var _target$getBoundingCl2 = target.getBoundingClientRect();
+    var _target$getBoundingCl2 = target.getBoundingClientRect(),
+        targetLeft = _target$getBoundingCl2.left;
 
-    var targetLeft = _target$getBoundingCl2.left;
-    var scrollWidth = dataSource.scrollWidth;
-    var clientWidth = dataSource.clientWidth;
-    var thumbWidth = dataSource.thumbWidth;
-    var trackWidth = dataSource.trackWidth;
+    var scrollWidth = dataSource.scrollWidth,
+        clientWidth = dataSource.clientWidth,
+        thumbWidth = dataSource.thumbWidth,
+        trackWidth = dataSource.trackWidth;
 
 
     var offset = Math.abs(targetLeft - clientX) - thumbWidth / 2;
