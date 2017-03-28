@@ -179,7 +179,7 @@ body.sb2-dragging{
                 overflow-x: hidden;
             }
             .sb2tracks.sb2h{
-                display: none !important;
+                display: none;
             }
         }
 
@@ -188,7 +188,7 @@ body.sb2-dragging{
                 overflow-y: hidden;
             }
             .sb2tracks.sb2v{
-                display: none !important;
+                display: none;
             }
         }
     }
@@ -197,13 +197,13 @@ body.sb2-dragging{
 
 .track_elem(@element, @normal, @hover, @active){
     &.sb2@{element} {
-
+        transition: opacity 200ms;
         background-color: @normal;
 
         & when (@element = h){
             bottom: 0;
             left: 0;
-            right: (0 + (@barWidth ) + 3);
+            right: (0 + (@barWidth ) - 2);
             border-top: 1px solid transparent;
             padding: 2px 3px;
         }
@@ -227,10 +227,39 @@ body.sb2-dragging{
         &.inactive {
             opacity: 0;
             &.sb2h when (@element = h){
-                bottom: -@barWidth;
+                //bottom: -@barWidth;
             }
             &.sb2v when (@element = v){
-                right: -@barWidth;
+                //right: -@barWidth;
+            }
+        }
+
+        &.extended{
+
+            &.sb2h when (@element = h){
+                right: 0;
+            }
+            &.sb2v when (@element = v){
+                bottom: 0;
+            }
+        }
+
+        &.shrinked{
+
+            &.sb2h when (@element = h){
+                right: @barWidth - 1;
+                &:after{
+                    content: '';
+                    background-color: @normal;
+                    position: absolute;
+                    width: @barWidth - 1;
+                    height: @barWidth;
+                    right: -@barWidth + 1;
+                    bottom: 0;
+                }
+            }
+            &.sb2v when (@element = v){
+                bottom: @barWidth;
             }
         }
     }

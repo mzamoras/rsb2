@@ -116,11 +116,31 @@ export const itComponentAsync = function (component, callBack) {
     };
 };
 
-export const itRendered = function( component, callback ){
+
+const destroyNodes = function () {
+    if ( nodesToDestroy.length > 0 ) {
+        for ( const obj of nodesToDestroy ) {
+            const container = document.getElementById( obj.thisNodeID );
+            unmountComponentAtNode( obj.thisNodeObj );
+            mainNode.removeChild( container );
+            nodesToDestroy = nodesToDestroy.filter( node => node.thisNodeID != obj.thisNodeID );
+        }
+    }
+};
+
+const autoDestroySingle = function(shouldDestroy, thisNodeID, thisNodeObj){
+    if( shouldDestroy ){
+        nodesToDestroy.push( { thisNodeID, thisNodeObj } );
+        destroyNodes();
+    }
+};
+
+export const itRendered = function( component, callbackOrTimeout, callback = null ){
     
     const thisNodeInfo = makeNode();
     const thisNodeObj  = thisNodeInfo.caseNode;
     const thisNodeID   = thisNodeInfo.id;
+    const needsTimeout = typeof callbackOrTimeout === 'number';
     
     return new Promise( function (resolve, reject) {
         const doneAndDestroy = function (autoDestroy=false) {
@@ -128,21 +148,22 @@ export const itRendered = function( component, callback ){
             resolve();
         };
         render( component, thisNodeObj, function () {
-            callback.bind(this, doneAndDestroy)();
+            if( needsTimeout ){
+                const to = setTimeout( ()=>{
+                    callback.bind(this, doneAndDestroy)();
+                    clearTimeout( to );
+                } ,callbackOrTimeout);
+            }
+            else{
+                callbackOrTimeout.bind(this, doneAndDestroy)();
+            }
+
         });
     } );
 
 };
 
-const autoDestroySingle = function(shouldDestroy, thisNodeID, thisNodeObj){
-   if( shouldDestroy ){
-       //setTimeout(function () {
-           nodesToDestroy.push( { thisNodeID, thisNodeObj } );
-           destroyNodes();
-       //},3000);
-       
-   }
-};
+
 
 /*export const itRendered = function( component, callback ){
     const container = {
@@ -157,16 +178,7 @@ const autoDestroySingle = function(shouldDestroy, thisNodeID, thisNodeObj){
 };*/
 
 
-const destroyNodes = function () {
-    if ( nodesToDestroy.length > 0 ) {
-        for ( const obj of nodesToDestroy ) {
-            const container = document.getElementById( obj.thisNodeID );
-            unmountComponentAtNode( obj.thisNodeObj );
-            mainNode.removeChild( container );
-            nodesToDestroy = nodesToDestroy.filter( node => node.thisNodeID != obj.thisNodeID );
-        }
-    }
-};
+
 
 export const renderComponentBeforeEachTest = function (component, destroyable) {
     

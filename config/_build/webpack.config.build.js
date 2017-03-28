@@ -76,7 +76,7 @@ var config = {
     },
     lessLoader: {
         lessPlugins: [
-            new LessPluginCleanCSS( { advanced: true } )
+            new LessPluginCleanCSS( { advanced: true, level:1 } )
         ]
     },
 };

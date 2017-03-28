@@ -22,7 +22,8 @@
 /*global describe it before*/
 
 import React from 'react';
-import Scrollbars2 from '../../src/Scrollbars2/index'
+//import Scrollbars2 from '../../src/index'
+import Scrollbars2 from '../../compiled/index'
 import Lorem from 'react-lorem-component';
 import {createGlobalNode, itRendered} from '../specs/mochaTDDSetup';
 import expect, {createSpy} from 'expect';
@@ -36,11 +37,11 @@ const ComponentToTest = function ( title = "Component Testing", props = {}, styl
     this.length   = 40;
     this.sections = [];
 
-    this.innerElement = ( givenTitle = null )=> {
+    this.innerElement = ( givenTitle = null ) => {
         return (
-            <div style={this.styleIn}>
+            <div style={this.styleIn} >
                 <h1>{givenTitle || this.title}</h1>
-                <Lorem count={this.length}/>
+                <Lorem count={this.length} />
             </div>
         );
     };
@@ -59,7 +60,7 @@ const ComponentToTest = function ( title = "Component Testing", props = {}, styl
     };
 
     //Set title counting section
-    this.t = ( sectionTitle )=> {
+    this.t = ( sectionTitle ) => {
         const thisTitle = (this.sections.length + 1 ) + "." + sectionTitle;
         this.sections.push( {
             title: thisTitle,
@@ -68,7 +69,7 @@ const ComponentToTest = function ( title = "Component Testing", props = {}, styl
         return thisTitle;
     };
 
-    this.setTitle = ( newTitle )=> {
+    this.setTitle = ( newTitle ) => {
         this.title = newTitle;
         return title;
     };
@@ -145,7 +146,7 @@ describe( "B. CSS Classes Applied", function () {
     const comp        = new ComponentToTest();
     const autoDestroy = true;
 
-    describe("Defaults", function () {
+    describe( "Defaults", function () {
         it( comp.t( "Container has Class: sb2container" ), function test() {
             return itRendered( comp.get( null, { autoHide: false } ), function ( done ) {
                 const element = this.refs["container"];
@@ -188,24 +189,24 @@ describe( "B. CSS Classes Applied", function () {
                 done( autoDestroy );
             } )
         } );
-    });
+    } );
 
-    describe("Showing only one track", function () {
-        it(comp.t('Only vertical track, Horizontal should be inactive'), function test(  ) {
-            return itRendered( comp.get( ), function ( done ) {
+    describe( "Showing only one track", function () {
+        it( comp.t( 'Only vertical track, Horizontal should be inactive' ), function test() {
+            return itRendered( comp.get(), function ( done ) {
                 const element = this.refs["trackHorizontal"];
                 expect( element.style.display ).toEqual( 'none' );
                 done( autoDestroy );
             } )
-        });
-        it(comp.t('Only horizontal track, Vertical should be inactive'), function test(  ) {
-            return itRendered( comp.get(null, {showVertical:false, showHorizontal:true} ), function ( done ) {
-                const element = this.refs["trackHorizontal"];
+        } );
+        it( comp.t( 'Only horizontal track, Vertical should be inactive' ), function test() {
+            return itRendered( comp.get( null, { showVertical: false, showHorizontal: true } ), function ( done ) {
+                const element = this.refs["trackVertical"];
                 expect( element.style.display ).toEqual( 'none' );
                 done( autoDestroy );
             } )
-        })
-    })
+        } )
+    } )
 
 } );
 
@@ -219,33 +220,46 @@ describe( "C. API Functions", function () {
     it( comp.t( " Scroll to Top" ), function test() {
         return itRendered( comp.get(), function ( done ) {
             const { view } = this.refs;
-            this.api.toTop( 100 );
-            expect( view.scrollTop ).toEqual( '100' );
-            done( autoDestroy );
+            const to       = setTimeout( () => {
+                this.api.toTop( 100 );
+                expect( view.scrollTop ).toEqual( '100' );
+                clearTimeout( to );
+                done( autoDestroy );
+            }, 0 );
+
         } )
     } );
     it( comp.t( " Scroll to Bottom" ), function test() {
         return itRendered( comp.get(), function ( done ) {
             const { view } = this.refs;
-            this.api.toBottom( 100 );
-            expect( view.scrollTop ).toEqual( this.scrollDataManager.values.maxScrollTop - 100 );
-            done( autoDestroy );
+            const to       = setTimeout( () => {
+                this.api.toBottom( 100 );
+                expect( view.scrollTop ).toEqual( this.scrollDataManager.values.maxScrollTop - 100 );
+                clearTimeout( to );
+                done( autoDestroy );
+            }, 0 );
         } )
     } );
     it( comp.t( " Scroll to Left" ), function test() {
         return itRendered( comp.get(), function ( done ) {
             const { view } = this.refs;
-            this.api.toLeft( 100 );
-            expect( view.scrollLeft ).toEqual( 100 );
-            done( autoDestroy );
+            const to       = setTimeout( () => {
+                this.api.toLeft( 100 );
+                expect( view.scrollLeft ).toEqual( 100 );
+                clearTimeout( to );
+                done( autoDestroy );
+            }, 0 );
         } )
     } );
     it( comp.t( " Scroll to Right" ), function test() {
         return itRendered( comp.get(), function ( done ) {
             const { view } = this.refs;
-            this.api.toRight( 100 );
-            expect( view.scrollLeft ).toEqual( this.scrollDataManager.values.maxScrollLeft - 100 );
-            done( autoDestroy );
+            const to       = setTimeout( () => {
+                this.api.toRight( 100 );
+                expect( view.scrollLeft ).toEqual( this.scrollDataManager.values.maxScrollLeft - 100 );
+                clearTimeout( to );
+                done( autoDestroy );
+            }, 0 );
         } )
     } );
 } );
@@ -255,7 +269,7 @@ describe( "D. Flash Behaviour", function () {
     const autoDestroy = true;
 
     describe( ' Flash Time 100ms delay 0ms, both visible', function () {
-        const aProps = { flashTimeDelay: 0, flashTime: 100, showHorizontal: true, autoHide: true };
+        const aProps = { flashTimeDelay: 0, flashTime: 100, showHorizontal: true, showVertical: true, autoHide: true };
         comp.styleIn = { minWidth: '200%' };
 
         it( comp.t( "Tracks Starts Visible" ), function test() {
@@ -278,7 +292,7 @@ describe( "D. Flash Behaviour", function () {
 
                 const { trackHorizontal, trackVertical } = this.refs;
 
-                const to = setTimeout( ()=> {
+                const to = setTimeout( () => {
                     const calcStyleH = window.getComputedStyle( trackHorizontal );
                     const calcStyleV = window.getComputedStyle( trackVertical );
                     expect( calcStyleH.opacity ).toEqual( '0' );
@@ -301,10 +315,16 @@ describe( "D. Flash Behaviour", function () {
                 const { trackHorizontal, trackVertical } = this.refs;
                 const calcStyleH                         = window.getComputedStyle( trackHorizontal );
                 const calcStyleV                         = window.getComputedStyle( trackVertical );
+                const to                                 = setTimeout( () => {
+                    expect( calcStyleH.display ).toEqual( 'block' );
+                    expect( calcStyleH.opacity ).toEqual( '0' );
+                    expect( calcStyleV.display ).toEqual( 'block' );
+                    expect( calcStyleV.opacity ).toEqual( '0' );
+                    clearTimeout( to );
+                    done( false );
+                }, 50 );
 
-                expect( calcStyleH.display ).toEqual( 'none' );
-                expect( calcStyleV.display ).toEqual( 'none' );
-                done( autoDestroy );
+
             } )
         } );
 
@@ -313,18 +333,18 @@ describe( "D. Flash Behaviour", function () {
 
                 const { trackHorizontal, trackVertical } = this.refs;
 
-                const to = setTimeout( ()=> {
+                const to = setTimeout( () => {
 
                     const calcStyleH = window.getComputedStyle( trackHorizontal );
                     const calcStyleV = window.getComputedStyle( trackVertical );
 
-                    expect( calcStyleH.opacity ).toEqual( '1' );
+                    expect( parseFloat(calcStyleH.opacity) ).toBeGreaterThan( 0 );
                     expect( calcStyleH.display ).toEqual( 'block' );
-                    expect( calcStyleV.opacity ).toEqual( '1' );
+                    expect( parseFloat(calcStyleV.opacity) ).toBeGreaterThan( 0 );
                     expect( calcStyleV.display ).toEqual( 'block' );
                     clearTimeout( to );
                     done( autoDestroy );
-                }, 150 );
+                }, 205 );
 
             } )
         } );
@@ -334,7 +354,7 @@ describe( "D. Flash Behaviour", function () {
 
                 const { trackHorizontal, trackVertical } = this.refs;
 
-                const to = setTimeout( ()=> {
+                const to = setTimeout( () => {
                     const calcStyleH = window.getComputedStyle( trackHorizontal );
                     const calcStyleV = window.getComputedStyle( trackVertical );
                     expect( calcStyleH.opacity ).toEqual( '0' );
@@ -348,7 +368,7 @@ describe( "D. Flash Behaviour", function () {
     } );
 
     describe( ' Flash Time 0ms delay 100ms, both visible', function () {
-        const aProps = { flashTimeDelay: 50, flashTime: 200, showHorizontal: true, autoHide: true };
+        const aProps = { flashTimeDelay: 100, flashTime: 0, showHorizontal: true, autoHide: true };
         comp.styleIn = { minWidth: '200%' };
 
         it( comp.t( "Tracks Starts hidden" ), function test() {
@@ -358,24 +378,26 @@ describe( "D. Flash Behaviour", function () {
                 const calcStyleH                         = window.getComputedStyle( trackHorizontal );
                 const calcStyleV                         = window.getComputedStyle( trackVertical );
 
-                expect( calcStyleH.display ).toEqual( 'none' );
-                expect( calcStyleV.display ).toEqual( 'none' );
+                expect( calcStyleH.display ).toEqual( 'block' );
+                expect( calcStyleH.opacity ).toEqual( '0' );
+                expect( calcStyleV.display ).toEqual( 'block' );
+                expect( calcStyleV.opacity ).toEqual( '0' );
                 done( autoDestroy );
             } )
         } );
 
-        it( comp.t( "Tracks Visible after 100ms + transition 200ms" ), function test() {
+        it( comp.t( "Tracks Still Invisible after 100ms + transition 200ms" ), function test() {
             return itRendered( comp.get( null, aProps ), function ( done ) {
 
                 const { trackHorizontal, trackVertical } = this.refs;
 
-                const to = setTimeout( ()=> {
+                const to = setTimeout( () => {
                     const calcStyleH = window.getComputedStyle( trackHorizontal );
                     const calcStyleV = window.getComputedStyle( trackVertical );
-                    expect( calcStyleH.opacity ).toEqual( '1' );
-                    expect( calcStyleV.opacity ).toEqual( '1' );
+                    expect( calcStyleH.opacity ).toEqual( '0' );
+                    expect( calcStyleV.opacity ).toEqual( '0' );
                     clearTimeout( to );
-                    done( autoDestroy );
+                    done( false );
                 }, 250 );
 
             } )
@@ -411,7 +433,7 @@ describe( "E. AutoHide Behaviour", function () {
             return itRendered( comp.get( null, aProps ), function ( done ) {
 
                 const { trackHorizontal, trackVertical } = this.refs;
-                const to                                 = setTimeout( ()=> {
+                const to                                 = setTimeout( () => {
                     const calcStyleH = window.getComputedStyle( trackHorizontal );
                     const calcStyleV = window.getComputedStyle( trackVertical );
 
@@ -437,33 +459,37 @@ describe( "E. AutoHide Behaviour", function () {
 
                 const calcStyleH = window.getComputedStyle( trackHorizontal );
                 const calcStyleV = window.getComputedStyle( trackVertical );
-                expect( calcStyleV.display ).toEqual( 'none' );
-                expect( calcStyleH.display ).toEqual( 'none' );
+                expect( calcStyleV.display ).toEqual( 'block' );
+                expect( calcStyleV.opacity ).toEqual( '0' );
+                expect( calcStyleH.display ).toEqual( 'block' );
+                expect( calcStyleH.opacity ).toEqual( '0' );
                 done( autoDestroy );
             } )
         } );
         it( comp.t( "Tracks Appear after movement" ), function test() {
-            return itRendered( comp.get( null, aProps ), function ( done ) {
+            return itRendered( comp.get( null, aProps ), 50, function ( done ) {
 
                 const { trackVertical } = this.refs;
                 this.api.toTop( 400 );
-                const to = setTimeout( ()=> {
+                const to = setTimeout( () => {
                     const calcStyleV = window.getComputedStyle( trackVertical );
                     expect( calcStyleV.display ).toEqual( 'block' );
                     expect( calcStyleV.opacity ).toEqual( '1' );
+                    clearTimeout(to);
                     done( autoDestroy );
                 }, 250 );
             } )
         } );
         it( comp.t( "Tracks Hides after autoHideTimeout:200ms + transition 200ms" ), function test() {
-            return itRendered( comp.get( null, aProps ), function ( done ) {
+            return itRendered( comp.get( null, aProps ), 50, function ( done ) {
 
                 const { trackVertical } = this.refs;
                 this.api.toTop( 200 );
-                const to = setTimeout( ()=> {
+                const to = setTimeout( () => {
                     const calcStyleV = window.getComputedStyle( trackVertical );
                     expect( calcStyleV.display ).toEqual( 'block' );
                     expect( calcStyleV.opacity ).toEqual( '0' );
+                    clearTimeout(to);
                     done( autoDestroy );
                 }, 550 );
             } )
@@ -482,16 +508,17 @@ describe( "F. Event Handling", function () {
     it( comp.t( " onScrollTop" ), function test() {
         const spy   = createSpy();
         const aProp = { atTop: spy };
-        return itRendered( comp.get( null, aProp ), function ( done ) {
+        return itRendered( comp.get( null, aProp ), delayTime, function ( done ) {
 
             this.api.toTop( 100 );
-
-            setTimeout( ()=> {
+            const to1 = setTimeout( () => {
                 this.api.toTop( 0 );
-                setTimeout( ()=> {
+                const to2 = setTimeout( () => {
                     expect( spy ).toHaveBeenCalled();
                     done( autoDestroy );
-                }, delayTime );
+                    clearTimeout(to1);
+                    clearTimeout(to2);
+                },delayTime);
             }, delayTime );
 
         } )
@@ -499,11 +526,12 @@ describe( "F. Event Handling", function () {
     it( comp.t( " onScrollBottom" ), function test() {
         const spy   = createSpy();
         const aProp = { atBottom: spy };
-        return itRendered( comp.get( null, aProp ), function ( done ) {
+        return itRendered( comp.get( null, aProp ), delayTime, function ( done ) {
             this.api.toBottom( 0 );
-            setTimeout( ()=> {
+            const to = setTimeout( () => {
                 expect( spy ).toHaveBeenCalled();
                 done( autoDestroy );
+                clearTimeout(to);
             }, delayTime );
         } )
     } );
@@ -511,14 +539,17 @@ describe( "F. Event Handling", function () {
         const spy   = createSpy();
         const aProp = { atLeft: spy, showHorizontal: true };
 
-        return itRendered( comp.get( null, aProp ), function ( done ) {
+        return itRendered( comp.get( null, aProp ), delayTime, function ( done ) {
             this.api.toLeft( 100 );
-            setTimeout( ()=> {
+            const to1 = setTimeout( () => {
                 this.api.toLeft( 0 );
-                setTimeout( ()=> {
+                const to2 = setTimeout( () => {
                     expect( spy ).toHaveBeenCalled();
                     done( autoDestroy );
-                }, delayTime );
+                    clearTimeout(to1);
+                    clearTimeout(to2);
+                },delayTime);
+
             }, delayTime );
         } )
     } );
@@ -526,12 +557,13 @@ describe( "F. Event Handling", function () {
         const spy   = createSpy();
         const aProp = { atRight: spy, showHorizontal: true };
 
-        return itRendered( comp.get( null, aProp ), function ( done ) {
+        return itRendered( comp.get( null, aProp ), delayTime, function ( done ) {
             this.api.toRight( 0 );
-            setTimeout( ()=> {
+            const to = setTimeout( () => {
                 this.api.toRight( 0 );
                 expect( spy ).toHaveBeenCalled();
                 done( autoDestroy );
+                clearTimeout(to);
             }, delayTime );
         } )
     } );
@@ -544,42 +576,60 @@ describe( "G. Custom Styles Applied", function () {
     const autoDestroy = true;
 
     it( comp.t( " Container Custom Style" ), function test() {
-        return itRendered( comp.get( null, { showHorizontal: true, containerStyle: { backgroundColor: 'red' } } ), function ( done ) {
+        return itRendered( comp.get( null, {
+            showHorizontal: true,
+            containerStyle: { backgroundColor: 'red' }
+        } ), function ( done ) {
             expect( this.refs['container'].style.backgroundColor ).toEqual( 'red' );
 
             done( autoDestroy );
         } )
     } );
     it( comp.t( " View Custom Style" ), function test() {
-        return itRendered( comp.get( null, { showHorizontal: true, viewStyle: { backgroundColor: 'red' } } ), function ( done ) {
+        return itRendered( comp.get( null, {
+            showHorizontal: true,
+            viewStyle     : { backgroundColor: 'red' }
+        } ), function ( done ) {
             expect( this.refs['view'].style.backgroundColor ).toEqual( 'red' );
 
             done( autoDestroy );
         } )
     } );
     it( comp.t( " trackHorizontal Custom Style" ), function test() {
-        return itRendered( comp.get( null, { showHorizontal: true, tracksStyle: { backgroundColor: 'red' } } ), function ( done ) {
+        return itRendered( comp.get( null, {
+            showHorizontal: true,
+            tracksStyle   : { backgroundColor: 'red' }
+        } ), function ( done ) {
             expect( this.refs['trackHorizontal'].style.backgroundColor ).toEqual( 'red' );
 
             done( autoDestroy );
         } )
     } );
     it( comp.t( " trackVertical Custom Style" ), function test() {
-        return itRendered( comp.get( null, { showHorizontal: true, tracksStyle: { backgroundColor: 'red' } } ), function ( done ) {
+        return itRendered( comp.get( null, {
+            showHorizontal: true,
+            tracksStyle   : { backgroundColor: 'red' }
+        } ), function ( done ) {
             expect( this.refs['trackVertical'].style.backgroundColor ).toEqual( 'red' );
 
             done( autoDestroy );
         } )
     } );
     it( comp.t( " thumbHorizontal Custom Style" ), function test() {
-        return itRendered( comp.get( null, { showHorizontal: true, thumbsStyle: { backgroundColor: 'red' } } ), function ( done ) {
+        return itRendered( comp.get( null, {
+            showHorizontal: true,
+            thumbsStyle   : { backgroundColor: 'red' }
+        } ), function ( done ) {
             expect( this.refs['thumbHorizontal'].style.backgroundColor ).toEqual( 'red' );
 
             done( autoDestroy );
         } )
     } );
     it( comp.t( " thumbVertical Custom Style" ), function test() {
-        return itRendered( comp.get( null, { showHorizontal: true, thumbsStyle: { backgroundColor: 'red' } } ), function ( done ) {
+        return itRendered( comp.get( null, {
+            showHorizontal: true,
+            thumbsStyle   : { backgroundColor: 'red' }
+        } ), function ( done ) {
             expect( this.refs['thumbVertical'].style.backgroundColor ).toEqual( 'red' );
 
             done( autoDestroy );
@@ -590,77 +640,77 @@ describe( "G. Custom Styles Applied", function () {
 
 describe( "H. Trackbar combined positions and styles", function () {
     const comp        = new ComponentToTest();
-    comp.styleIn = { minWidth: '300%' };
-    const autoDestroy = true;
+    comp.styleIn      = { minWidth: '300%' };
+    const autoDestroy = false;
 
-    describe('When rendering and tracks are visible', function () {
+    describe( 'When rendering and tracks are visible', function () {
         it( comp.t( "Only Vertical Track: thumb should scroll up to the bottom" ), function test() {
             const aProps = {};
-            return itRendered( comp.get( null, aProps ), function ( done ) {
+            return itRendered( comp.get( null, aProps ), 50, function ( done ) {
                 const { trackVertical } = this.refs;
                 expect( trackVertical.className ).toContain( 'extended' );
                 done( autoDestroy );
             } )
         } );
         it( comp.t( "Only Horizontal Track: thumb should scroll up to the right" ), function test() {
-            const aProps = { showVertical:false, showHorizontal:true };
-            return itRendered( comp.get( null, aProps ), function ( done ) {
+            const aProps = { showVertical: false, showHorizontal: true };
+            return itRendered( comp.get( null, aProps ), 50, function ( done ) {
                 const { trackHorizontal } = this.refs;
                 expect( trackHorizontal.className ).toContain( 'extended' );
                 done( autoDestroy );
             } )
         } );
         it( comp.t( "Both tracks Track: thumb should scroll but limited each other" ), function test() {
-            const aProps = { showHorizontal:true };
-            return itRendered( comp.get( null, aProps ), function ( done ) {
+            const aProps = { showHorizontal: true };
+            return itRendered( comp.get( null, aProps ), 50, function ( done ) {
                 const { trackHorizontal, trackVertical } = this.refs;
                 expect( trackHorizontal.className ).toContain( 'shrinked' );
                 expect( trackVertical.className ).toContain( 'shrinked' );
                 done( autoDestroy );
             } )
         } );
-    });
+    } );
 
-    describe('On Moving when autoHide is activated', function () {
+    describe( 'On Moving when autoHide is activated', function () {
         it( comp.t( "Both Activated only vTrack moving: track extended" ), function test() {
-            const aProps = { showHorizontal: true, autoHide:true };
-            return itRendered( comp.get( null, aProps ), function ( done ) {
-                this.api.toTop(30);
-                setTimeout(()=>{
+            const aProps = { showHorizontal: true, autoHide: true };
+            return itRendered( comp.get( null, aProps ), 50, function ( done ) {
+                this.api.toTop( 30 );
+                setTimeout( () => {
                     const { trackVertical } = this.refs;
                     expect( trackVertical.className ).toContain( 'extended' );
                     done( autoDestroy );
-                },30);
+                }, 30 );
             } )
         } );
         it( comp.t( "Both Activated only hTrack moving: track extended" ), function test() {
-            const aProps = { autoHide:true, showHorizontal:true };
-            return itRendered( comp.get( null, aProps ), function ( done ) {
-                this.api.toLeft(30);
-                setTimeout(()=>{
+            const aProps = { autoHide: true, showHorizontal: true };
+            return itRendered( comp.get( null, aProps ), 50, function ( done ) {
+                this.api.toLeft( 30 );
+                setTimeout( () => {
                     const { trackHorizontal } = this.refs;
                     expect( trackHorizontal.className ).toContain( 'extended' );
                     done( autoDestroy );
-                },30);
+                }, 30 );
             } )
         } );
         it( comp.t( "Both tracks Track: must re-adapt after movement" ), function test() {
-            const aProps = { showHorizontal:true, autoHide:true };
-            return itRendered( comp.get( null, aProps ), function ( done ) {
+            const aProps = { showHorizontal: true, autoHide: true };
+            return itRendered( comp.get( null, aProps ), 50, function ( done ) {
                 const { trackHorizontal, trackVertical } = this.refs;
-                this.api.toTop(30);
-                setTimeout( ()=>{
+                this.api.toTop( 30 );
+                setTimeout( () => {
                     expect( trackVertical.className ).toContain( 'extended' );
-                    this.api.toLeft(30);
-                    setTimeout( ()=>{
+                    this.api.toLeft( 30 );
+                    setTimeout( () => {
                         expect( trackHorizontal.className ).toContain( 'shrinked' );
                         expect( trackVertical.className ).toContain( 'shrinked' );
                         done( autoDestroy );
-                    } ,30);
-                } ,30);
+                    }, 30 );
+                }, 30 );
             } )
         } );
-    });
+    } );
 
 } );
 

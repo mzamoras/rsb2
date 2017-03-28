@@ -5,381 +5,429 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.Scrollbars2 = undefined;
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; /*
-                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                   *  File: index.js | Package: Scrollbars2
-                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                   *  Author:    Miguel Zamora Serrano <mzamoras@backlogics.com>
-                                                                                                                                                                                                                                                                   *  Created:   12 Sep, 2016 | 03:33 PM
-                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                   *  This file is part of a package and all the information, intellectual
-                                                                                                                                                                                                                                                                   *  and technical concepts contained here are property of their owners.
-                                                                                                                                                                                                                                                                   *  Any kind of use, reproduction, distribution, publication, etc. without
-                                                                                                                                                                                                                                                                   *  express written permission from CapitalMental && BackLogics Technologies
-                                                                                                                                                                                                                                                                   *  is strictly forbidden.
-                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                   *  CapitalMental && BackLogics Technologies
-                                                                                                                                                                                                                                                                   *  Copyright 2014-present. | All rights reserved.
-                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                   */
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
-var _basicStyles = require('./basicStyles');
+var _reactAutobindHelper = require('react-autobind-helper');
 
-var styles = _interopRequireWildcard(_basicStyles);
+var _reactAutobindHelper2 = _interopRequireDefault(_reactAutobindHelper);
 
 var _tinyEmitter = require('tiny-emitter');
 
 var _tinyEmitter2 = _interopRequireDefault(_tinyEmitter);
 
-var _classnames = require('classnames');
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var _throttle2 = require('lodash/throttle');
-
-var _throttle3 = _interopRequireDefault(_throttle2);
-
 var _utils = require('./utils');
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+var _scrollbarsStyle = require('./scrollbarsStyle');
+
+var _scrollbarsStyle2 = _interopRequireDefault(_scrollbarsStyle);
+
+var _scrollbarsClassNames = require('./scrollbarsClassNames');
+
+var _scrollbarsClassNames2 = _interopRequireDefault(_scrollbarsClassNames);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var RPT = _react2.default.PropTypes;
-var HOR = 'HORIZONTAL';
-var VER = 'VERTICAL';
-var cssChanges = [];
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /*
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  File: index.js | Package: Scrollbars2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  Author:    Miguel Zamora Serrano <mzamoras@backlogics.com>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  Created:   12 Sep, 2016 | 03:33 PM
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  This file is part of a package and all the information, intellectual
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  and technical concepts contained here are property of their owners.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  Any kind of use, reproduction, distribution, publication, etc. without
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  express written permission from CapitalMental && BackLogics Technologies
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  is strictly forbidden.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  CapitalMental && BackLogics Technologies
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *  Copyright 2014-present. | All rights reserved.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+//noinspection JSUnresolvedVariable
+
+
+var defaultParsedStyle = require('to-string!css!less!./style/style.less');
 
 var CSS_CLASS = 'sb2-scrollbars2';
 var CSS_TAG_ID = 'sb2-tag';
-
 var noop = function noop() {
     return null;
 };
-var noopFalse = function noopFalse() {
-    return false;
-};
-var noopTrue = function noopTrue() {
-    return false;
-};
 
-var Scrollbars2 = exports.Scrollbars2 = _react2.default.createClass({
-    displayName: 'Scrollbars2',
+var Scrollbars2 = exports.Scrollbars2 = function (_Component) {
+    _inherits(Scrollbars2, _Component);
 
+    function Scrollbars2(props) {
+        _classCallCheck(this, Scrollbars2);
 
-    /*** SETUP ***/
+        var _this = _possibleConstructorReturn(this, (Scrollbars2.__proto__ || Object.getPrototypeOf(Scrollbars2)).call(this, props));
 
-    setup: function setup() {
-        this.emitter = new _tinyEmitter2.default();
+        (0, _reactAutobindHelper2.default)(_this);
 
-        this._c = this.refs['container'];
-        this._view = this.refs['view'];
-        this._ht = this.refs['trackHorizontal'];
-        this._vt = this.refs['trackVertical'];
-        this._htn = this.refs['thumbHorizontal'];
-        this._vtn = this.refs['thumbVertical'];
-
-        this.scrollDataManager = new _utils.ScrollDataManager(this.refs, this.props, this.emitter);
-        this.movementManager = new _utils.MovementManager(this.scrollDataManager, this.props, this.emitter);
-        this.visualChangesManager = new _utils.VisualChangesManager();
-        this.scrollingManager = new _utils.ScrollingManager(this.refs, this.props, this.scrollDataManager, this.movementManager, this.visualChangesManager);
-        this.draggingManager = new _utils.DraggingManager(this.refs, this.scrollDataManager);
-
-        this.emitter.on('scroll:start', this.onScrollStart);
-        // this.emitter.on( 'scroll:end', this.onScrollEnd );
-        this.emitter.on('scroll:end', this.onScrollEnd);
-        this.emitter.on('scroll:scrolling', this.onScrolling);
-
-        this.emitter.on('scroll:atTop', this.atTop);
-        this.emitter.on('scroll:atBottom', this.atBottom);
-        this.emitter.on('scroll:atLeft', this.atLeft);
-        this.emitter.on('scroll:atRight', this.atRight);
-
-        this.addListeners();
-        this.api = {};
-        this.exposeApiFunctions();
-    },
-    init: function init() {
-        this.scrollingManager.initialize();
-        //this.debouncedFunction = _debounce( this.testFunction2, 200 );
-        //this.debouncedOnScroll = _debounce( this.scrollingManager.onScroll, 50 );
-
-        this.props.onMount({
-            containerView: this.refs['container'],
-            scrollableView: this.refs['view'],
-            scrollbarObject: this,
-            initialData: this.scrollingManager.prepareExportableData()
-        });
-    },
-
-
-    /*** API FUNCTIONS ***/
-    exposeApiFunctions: function exposeApiFunctions() {
-        var _this = this;
-
-        this.api.toTop = this.scrollingManager.toTop.bind(this.scrollingManager);
-        this.api.toBottom = this.scrollingManager.toBottom.bind(this.scrollingManager);
-        this.api.toLeft = this.scrollingManager.toLeft.bind(this.scrollingManager);
-        this.api.toRight = this.scrollingManager.toRight.bind(this.scrollingManager);
-        this.api.enable = this.scrollingManager.enable.bind(this.scrollingManager);
-        this.api.disable = this.scrollingManager.disable.bind(this.scrollingManager);
-        this.api.cancelFlash = this.scrollingManager.cancelFlash.bind(this.scrollingManager);
-        this.api.update = this.update;
-        this.api.data = this.scrollingManager.prepareExportableData();
-        this.api.getPositionY = function () {
-            return _this.scrollingManager.prepareExportableData().scrollTop;
-        };
-        this.api.getPositionX = function () {
-            return _this.scrollingManager.prepareExportableData().scrollLeft;
+        _this.reactStyle = {
+            container: true,
+            view: true,
+            bothThumbs: true,
+            bothTracks: true,
+            trackH: true,
+            trackV: true,
+            thumbH: true,
+            thumbV: true
         };
 
-        this.api_scrollPositionY = function () {
-            return _this.scrollDataManager.data.scrollTop;
-        };
-        this.api_scrollPositionX = function () {
-            return _this.scrollDataManager.data.scrollLeft;
-        };
-    },
-
-
-    /*api(){
-     return {
-     toTop      : this.scrollingManager.toTop.bind( this.scrollingManager ),
-     toBottom   : this.scrollingManager.toBottom.bind( this.scrollingManager ),
-     toLeft     : this.scrollingManager.toLeft.bind( this.scrollingManager ),
-     toRight    : this.scrollingManager.toRight.bind( this.scrollingManager ),
-     enable     : this.scrollingManager.enable.bind( this.scrollingManager ),
-     disable    : this.scrollingManager.disable.bind( this.scrollingManager ),
-     cancelFlash: this.scrollingManager.cancelFlash.bind( this.scrollingManager ),
-     update     : this.update
-     }
-     },*/
-
-    update: function update() {
-        this.scrollDataManager.update();
-        this.scrollingManager.initializeX();
-        this.scrollingManager.initializeY();
-    },
-
-
-    /*** LISTENERS  ***/
-    addListeners: function addListeners() {
-
-        //this.throttledOnScroll = _throttle( this.onScroll,16 );
-        this._view.addEventListener('scroll', this.onScroll, {
-            passive: this.props.passiveEvent,
-            capture: true
-        });
-        this._view.addEventListener('wheel', this.onScroll, {
-            capture: true
-        });
-
-        /** object events **/
-        this._ht.addEventListener('mouseenter', this.onMouseEnterTrack);
-        this._ht.addEventListener('mouseleave', this.onMouseLeaveTrack);
-        this._ht.addEventListener('mousedown', this.onMouseDownTrack);
-        this._htn.addEventListener('mousedown', this.onMouseDownThumb);
-
-        this._vt.addEventListener('mouseenter', this.onMouseEnterTrack);
-        this._vt.addEventListener('mouseleave', this.onMouseLeaveTrack);
-        this._vt.addEventListener('mousedown', this.onMouseDownTrack);
-        this._vtn.addEventListener('mousedown', this.onMouseDownThumb);
-
-        this._ht.addEventListener('wheel', this.onScrollBarAndThumb, { capture: true });
-        this._vt.addEventListener('wheel', this.onScrollBarAndThumb, { capture: true });
-    },
-    removeListeners: function removeListeners() {
-        this._view.removeListener('scroll', this.onScroll, {
-            passive: this.props.passiveEvent,
-            capture: true
-        });
-        this._view.removeListener('wheel', this.onScroll, {
-            capture: true
-        });
-    },
-    testFunction2: function testFunction2() {
-        console.log("MUST BE PRINTED ON EACH SCROLL");
-    },
-
-
-    /*** SCROLL EVENTS ***/
-    onScroll: function onScroll(event) {
-        this.scrollingManager.onScroll(event);
-    },
-    onScrollStart: function onScrollStart() {
-        this.scrollingManager.onScrollStart();
-    },
-    onScrollEnd: function onScrollEnd() {
-        this.scrollingManager.onScrollEnd();
-    },
-    onScrolling: function onScrolling() {
-        this.scrollingManager.onScrolling();
-    },
-    atTop: function atTop() {
-        this.props.atTop();
-    },
-    atBottom: function atBottom() {
-        this.props.atBottom();
-    },
-    atLeft: function atLeft() {
-        this.props.atLeft();
-    },
-    atRight: function atRight() {
-        this.props.atRight();
-    },
-    onScrollBarAndThumb: function onScrollBarAndThumb(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        this.scrollingManager.onScrollBarAndThumb(event);
-    },
-
-
-    /*** TRACK EVENTS ***/
-    onMouseLeaveTrack: function onMouseLeaveTrack(event) {
-        this.scrollingManager.onMouseLeaveTrack(event);
-    },
-    onMouseEnterTrack: function onMouseEnterTrack(event) {
-        this.scrollingManager.onMouseEnterTrack(event);
-    },
-    onMouseDownTrack: function onMouseDownTrack(event) {
-        this.draggingManager.onTrackClicked(event);
-    },
-    onMouseDownThumb: function onMouseDownThumb(event) {
-        this.draggingManager.onDragStart(event);
-    },
-
-
-    /*** COMPONENT LIFECYCLE ***/
-
-    componentWillMount: function componentWillMount() {
-        var _props = this.props,
-            cssStyleClass = _props.cssStyleClass,
-            cssStylesheetID = _props.cssStylesheetID;
-
-
-        var isDefaultStyle = cssStyleClass === CSS_CLASS;
-        this.styleTagId = isDefaultStyle ? cssStylesheetID : CSS_TAG_ID + "_" + cssStyleClass;
-        this.styleClass = cssStyleClass;
-        this.styleManager = new _utils.StyleManager(this.styleTagId, this.styleClass);
-        //this.styleManager.setParsedRules( this.props.parsedStyle || defaultParsedStyle );
-
-        /*
-         Starts Hidden when:
-         - bar is not required by user
-         - there is a flash time and a flash delay and autohide
-          */
-
-        this.cssClasses = {
-            container: (0, _classnames2.default)('sb2container', 'initial', this.styleClass.toLowerCase().replace(".", " "), {
-                'sb2-auto-hide': this.props.autoHide,
-                'sb2-auto-height': this.props.autoHeight,
-                'sb2-expand-tracks': this.props.expandTracks,
-                'v-disabled': !this.props.showVertical,
-                'h-disabled': !this.props.showHorizontal
-            }),
-            view: (0, _classnames2.default)('sb2-view', {
-                performant: this.props.usePerformantView
-            }),
-            vTrack: 'sb2tracks sb2v',
-            hTrack: 'sb2tracks sb2h',
-            vThumb: 'sb2-thumb sb2-v',
-            hThumb: 'sb2-thumb sb2-h',
-            body: 'sb2-body',
-            scrolling: 'sb2-scrolling',
-            dragging: 'sb2-dragging',
-            autoHideOn: 'sb2-auto-hide-on',
-            expanded: 'sb2-expanded'
-        };
-    },
-    componentDidMount: function componentDidMount() {
-        var _this2 = this;
-
-        //this.apiFunctions  = ()=> this.api();
-        var setupTimeout = setTimeout(function () {
-            _this2.setup();
-            _this2.init();
-            clearTimeout(setupTimeout);
-        }, 100);
-    },
-
-
-    /***  RENDERS  ***/
-    render: function render() {
-
-        return _react2.default.createElement(
-            'div',
-            { ref: 'container', style: _extends({}, styles.container, this.props.containerStyle),
-                className: this.cssClasses.container },
-            _react2.default.createElement(
-                'div',
-                { ref: 'view', className: 'sb2view', style: _extends({}, styles.view, this.props.viewStyle) },
-                this.props.children
-            ),
-            _react2.default.createElement(
-                'div',
-                { ref: 'trackHorizontal', className: this.cssClasses.hTrack,
-                    style: _extends({}, styles.trackX, this.props.tracksStyle) },
-                _react2.default.createElement('div', { ref: 'thumbHorizontal', className: 'sb2thumbs sb2h',
-                    style: _extends({}, styles.thumbnailX, this.props.thumbsStyle) })
-            ),
-            _react2.default.createElement(
-                'div',
-                { ref: 'trackVertical', className: this.cssClasses.vTrack,
-                    style: _extends({}, styles.trackY, this.props.tracksStyle) },
-                _react2.default.createElement('div', { ref: 'thumbVertical', className: 'sb2thumbs sb2v',
-                    style: _extends({}, styles.thumbnailY, this.props.thumbsStyle) })
-            )
-        );
+        _this.reactStyle = (0, _scrollbarsStyle2.default)(props);
+        _this.cssClasses = (0, _scrollbarsClassNames2.default)(props);
+        return _this;
     }
-});
+
+    _createClass(Scrollbars2, [{
+        key: 'setup',
+        value: function setup() {
+            this.emitter = new _tinyEmitter2.default();
+
+            this._c = this.refs['container'];
+            this._view = this.refs['view'];
+            this._ht = this.refs['trackHorizontal'];
+            this._vt = this.refs['trackVertical'];
+            this._htn = this.refs['thumbHorizontal'];
+            this._vtn = this.refs['thumbVertical'];
+
+            this.scrollDataManager = new _utils.ScrollDataManager(this.refs, this.props, this.emitter);
+            this.movementManager = new _utils.MovementManager(this.scrollDataManager, this.props, this.emitter);
+            this.visualChangesManager = new _utils.VisualChangesManager();
+            this.scrollingManager = new _utils.ScrollingManager(this.refs, this.props, this.scrollDataManager, this.movementManager, this.visualChangesManager);
+            this.draggingManager = new _utils.DraggingManager(this.refs, this.scrollDataManager);
+
+            this.emitter.on('scroll:start', this.onScrollStart);
+            this.emitter.on('scroll:end', this.onScrollEnd);
+            this.emitter.on('scroll:scrolling', this.onScrolling);
+
+            this.emitter.on('scroll:atTop', this.atTop);
+            this.emitter.on('scroll:atBottom', this.atBottom);
+            this.emitter.on('scroll:atLeft', this.atLeft);
+            this.emitter.on('scroll:atRight', this.atRight);
+
+            this.addListeners();
+            this.api = {};
+            this.exposeApiFunctions();
+        }
+    }, {
+        key: 'init',
+        value: function init() {
+            this.scrollingManager.initialize();
+
+            this.props.onMount({
+                containerView: this.refs['container'],
+                scrollableView: this.refs['view'],
+                scrollbarObject: this,
+                initialData: this.scrollingManager.prepareExportableData()
+            });
+        }
+    }, {
+        key: 'exposeApiFunctions',
+
+
+        /*** API FUNCTIONS ***/
+        value: function exposeApiFunctions() {
+            var _this2 = this;
+
+            this.api.toTop = function () {
+                var dist = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+                return _this2.scrollingManager.toTop(dist);
+            };
+            this.api.toLeft = function () {
+                var dist = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+                return _this2.scrollingManager.toLeft(dist);
+            };
+            this.api.toBottom = function () {
+                var dist = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+                return _this2.scrollingManager.toBottom(dist);
+            };
+            this.api.toRight = function () {
+                var dist = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+                return _this2.scrollingManager.toRight(dist);
+            };
+            this.api.enable = function () {
+                return _this2.scrollingManager.enable();
+            };
+            this.api.disable = function () {
+                return _this2.scrollingManager.disable();
+            };
+            this.api.cancelFlash = function () {
+                return _this2.scrollingManager.cancelFlash();
+            };
+            this.api.update = function () {
+                return _this2.scrollingManager.update();
+            };
+            this.api.data = function () {
+                return _this2.scrollingManager.prepareExportableData();
+            };
+
+            this.api.getPositionY = function () {
+                return _this2.scrollingManager.prepareExportableData().scrollTop;
+            };
+            this.api.getPositionX = function () {
+                return _this2.scrollingManager.prepareExportableData().scrollLeft;
+            };
+        }
+    }, {
+        key: 'update',
+        value: function update() {
+            if (!this.scrollDataManager) return;
+            this.scrollDataManager.update();
+            this.scrollingManager.initializeX();
+            this.scrollingManager.initializeY();
+        }
+    }, {
+        key: 'addListeners',
+
+
+        /*** LISTENERS  ***/
+        value: function addListeners() {
+            var passive = this.props.passive;
+
+            var capture = true;
+
+            this._view.addEventListener('scroll', this.onScroll, { passive: passive, capture: capture });
+            this._view.addEventListener('wheel', this.onScroll, { capture: capture });
+
+            /** object events **/
+            this._ht.addEventListener('mouseenter', this.onMouseEnterTrack);
+            this._ht.addEventListener('mouseleave', this.onMouseLeaveTrack);
+            this._ht.addEventListener('mousedown', this.onMouseDownTrack);
+            this._htn.addEventListener('mousedown', this.onMouseDownThumb);
+
+            this._vt.addEventListener('mouseenter', this.onMouseEnterTrack);
+            this._vt.addEventListener('mouseleave', this.onMouseLeaveTrack);
+            this._vt.addEventListener('mousedown', this.onMouseDownTrack);
+            this._vtn.addEventListener('mousedown', this.onMouseDownThumb);
+
+            this._ht.addEventListener('wheel', this.onScrollBarAndThumb, { capture: capture });
+            this._vt.addEventListener('wheel', this.onScrollBarAndThumb, { capture: capture });
+        }
+    }, {
+        key: 'removeListeners',
+        value: function removeListeners() {
+            var passive = this.props.passive;
+
+            var capture = true;
+
+            this._view.removeEventListener('scroll', this.onScroll, { passive: passive, capture: capture });
+            this._view.removeEventListener('wheel', this.onScroll, { capture: capture });
+
+            /** object events **/
+            this._ht.removeEventListener('mouseenter', this.onMouseEnterTrack);
+            this._ht.removeEventListener('mouseleave', this.onMouseLeaveTrack);
+            this._ht.removeEventListener('mousedown', this.onMouseDownTrack);
+            this._htn.removeEventListener('mousedown', this.onMouseDownThumb);
+
+            this._vt.removeEventListener('mouseenter', this.onMouseEnterTrack);
+            this._vt.removeEventListener('mouseleave', this.onMouseLeaveTrack);
+            this._vt.removeEventListener('mousedown', this.onMouseDownTrack);
+            this._vtn.removeEventListener('mousedown', this.onMouseDownThumb);
+
+            this._ht.removeEventListener('wheel', this.onScrollBarAndThumb, { capture: capture });
+            this._vt.removeEventListener('wheel', this.onScrollBarAndThumb, { capture: capture });
+        }
+    }, {
+        key: 'onScroll',
+
+
+        /*** SCROLL EVENTS ***/
+        value: function onScroll(event) {
+            this.scrollingManager.onScroll(event);
+        }
+    }, {
+        key: 'onScrollStart',
+        value: function onScrollStart() {
+            this.scrollingManager.onScrollStart();
+        }
+    }, {
+        key: 'onScrollEnd',
+        value: function onScrollEnd() {
+            this.scrollingManager.onScrollEnd();
+        }
+    }, {
+        key: 'onScrolling',
+        value: function onScrolling() {
+            this.scrollingManager.onScrolling();
+        }
+    }, {
+        key: 'atTop',
+        value: function atTop() {
+            this.props.atTop();
+        }
+    }, {
+        key: 'atBottom',
+        value: function atBottom() {
+            this.props.atBottom();
+        }
+    }, {
+        key: 'atLeft',
+        value: function atLeft() {
+            this.props.atLeft();
+        }
+    }, {
+        key: 'atRight',
+        value: function atRight() {
+            this.props.atRight();
+        }
+    }, {
+        key: 'onScrollBarAndThumb',
+        value: function onScrollBarAndThumb(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            this.scrollingManager.onScrollBarAndThumb(event);
+        }
+    }, {
+        key: 'onMouseLeaveTrack',
+
+
+        /*** TRACK EVENTS ***/
+        value: function onMouseLeaveTrack(event) {
+            this.scrollingManager.onMouseLeaveTrack(event);
+        }
+    }, {
+        key: 'onMouseEnterTrack',
+        value: function onMouseEnterTrack(event) {
+            this.scrollingManager.onMouseEnterTrack(event);
+        }
+    }, {
+        key: 'onMouseDownTrack',
+        value: function onMouseDownTrack(event) {
+            this.draggingManager.onTrackClicked(event);
+        }
+    }, {
+        key: 'onMouseDownThumb',
+        value: function onMouseDownThumb(event) {
+            this.draggingManager.onDragStart(event);
+        }
+    }, {
+        key: 'componentWillUnmount',
+
+
+        /*** COMPONENT LIFECYCLE ***/
+        value: function componentWillUnmount() {
+            this.removeListeners();
+        }
+    }, {
+        key: 'componentWillMount',
+        value: function componentWillMount() {
+            var _props = this.props,
+                cssStyleClass = _props.cssStyleClass,
+                cssStylesheetID = _props.cssStylesheetID;
+
+
+            var isDefaultStyle = cssStyleClass === CSS_CLASS;
+            this.styleTagId = isDefaultStyle ? cssStylesheetID : CSS_TAG_ID + "_" + cssStyleClass;
+            this.styleClass = cssStyleClass;
+            this.styleManager = new _utils.StyleManager(this.styleTagId, this.styleClass);
+            this.styleManager.setParsedRules(this.props.parsedStyle || defaultParsedStyle);
+        }
+    }, {
+        key: 'componentDidMount',
+        value: function componentDidMount() {
+            this.setup();
+            this.init();
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            var _reactStyle = this.reactStyle,
+                container = _reactStyle.container,
+                view = _reactStyle.view,
+                trackV = _reactStyle.trackV,
+                trackH = _reactStyle.trackH,
+                thumbV = _reactStyle.thumbV,
+                thumbH = _reactStyle.thumbH;
+            var _cssClasses = this.cssClasses,
+                cssContainer = _cssClasses.cssContainer,
+                cssHTrack = _cssClasses.cssHTrack,
+                cssVTrack = _cssClasses.cssVTrack,
+                cssHThumb = _cssClasses.cssHThumb,
+                cssVThumb = _cssClasses.cssVThumb;
+
+
+            return _react2.default.createElement(
+                'div',
+                { ref: 'container', style: container, className: cssContainer },
+                _react2.default.createElement(
+                    'div',
+                    { ref: 'view', className: 'sb2view', style: view },
+                    this.props.children
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { ref: 'trackHorizontal', className: cssHTrack, style: trackH },
+                    _react2.default.createElement('div', { ref: 'thumbHorizontal', className: cssHThumb, style: thumbH })
+                ),
+                _react2.default.createElement(
+                    'div',
+                    { ref: 'trackVertical', className: cssVTrack, style: trackV },
+                    _react2.default.createElement('div', { ref: 'thumbVertical', className: cssVThumb, style: thumbV })
+                )
+            );
+        }
+    }]);
+
+    return Scrollbars2;
+}(_react.Component);
 
 /*** PROPS ***/
+
+
 Scrollbars2.propTypes = {
-    showVertical: RPT.bool,
-    showHorizontal: RPT.bool,
-    autoHide: RPT.bool,
-    autoHideTimeout: RPT.number,
-    autoHeight: RPT.bool,
-    autoHeightMin: RPT.number,
-    autoHeightMax: RPT.number,
-    thumbMinSize: RPT.number,
-    className: RPT.string,
+    showVertical: _react.PropTypes.bool,
+    showHorizontal: _react.PropTypes.bool,
+    autoHide: _react.PropTypes.bool,
+    autoHideTimeout: _react.PropTypes.number,
+    autoHeight: _react.PropTypes.bool,
+    autoHeightMin: _react.PropTypes.number,
+    autoHeightMax: _react.PropTypes.number,
+    thumbMinSize: _react.PropTypes.number,
+    className: _react.PropTypes.string,
 
-    onMount: RPT.func,
-    onScroll: RPT.func,
-    onScrollStart: RPT.func,
-    onScrollEnd: RPT.func,
-    onScrollFrame: RPT.func,
-    onUpdate: RPT.func,
-    atBottom: RPT.func,
-    atTop: RPT.func,
-    atRight: RPT.func,
-    atLeft: RPT.func,
+    onMount: _react.PropTypes.func,
+    onScroll: _react.PropTypes.func,
+    onScrollStart: _react.PropTypes.func,
+    onScrollEnd: _react.PropTypes.func,
+    onScrollFrame: _react.PropTypes.func,
+    onUpdate: _react.PropTypes.func,
+    atBottom: _react.PropTypes.func,
+    atTop: _react.PropTypes.func,
+    atRight: _react.PropTypes.func,
+    atLeft: _react.PropTypes.func,
 
-    cssStyleClass: RPT.string,
-    cssStylesheetID: RPT.string,
-    flashTime: RPT.number,
-    flashTimeDelay: RPT.number,
+    cssStyleClass: _react.PropTypes.string,
+    cssStylesheetID: _react.PropTypes.string,
+    flashTime: _react.PropTypes.number,
+    flashTimeDelay: _react.PropTypes.number,
 
-    containerStyle: RPT.object,
-    viewStyle: RPT.object,
-    tracksStyle: RPT.object,
-    thumbsStyle: RPT.object,
-    parsedStyle: RPT.string,
+    containerStyle: _react.PropTypes.object,
+    viewStyle: _react.PropTypes.object,
+    tracksStyle: _react.PropTypes.object,
+    thumbsStyle: _react.PropTypes.object,
+    parsedStyle: _react.PropTypes.string,
 
-    preventScrolling: RPT.bool,
-    updateOnUpdates: RPT.bool,
-    expandTracks: RPT.bool,
-    syncTracks: RPT.bool,
-    hideUnnecessary: RPT.bool,
-    passiveEvent: RPT.bool,
-    usePerformantView: RPT.bool
+    preventScrolling: _react.PropTypes.bool,
+    updateOnUpdates: _react.PropTypes.bool,
+    expandTracks: _react.PropTypes.bool,
+    syncTracks: _react.PropTypes.bool,
+    hideUnnecessary: _react.PropTypes.bool,
+    passiveEvent: _react.PropTypes.bool,
+    usePerformantView: _react.PropTypes.bool
 };
 Scrollbars2.defaultProps = {
     showVertical: true,

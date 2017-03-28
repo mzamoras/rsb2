@@ -51,6 +51,7 @@ function debounce(fn, delay) {
             args = arguments;
         clearTimeout(timer);
         timer = setTimeout(function () {
+            //noinspection JSUnresolvedFunction
             fn.apply(context, args);
         }, delay);
     };
@@ -144,7 +145,6 @@ var ScrollDataManager = exports.ScrollDataManager = function () {
 
     /*** Collect Element Info ***/
 
-
     _createClass(ScrollDataManager, [{
         key: 'gatherDataFromElement',
         value: function gatherDataFromElement() {
@@ -155,6 +155,12 @@ var ScrollDataManager = exports.ScrollDataManager = function () {
                 this.prevData = this.data;
                 this.hasPrevData = true;
             }
+
+            var _props = this.props,
+                flashTime = _props.flashTime,
+                flashTimeDelay = _props.flashTimeDelay,
+                autoHide = _props.autoHide;
+
 
             var tmpEl = this.view;
             var tmpData = {};
@@ -193,21 +199,14 @@ var ScrollDataManager = exports.ScrollDataManager = function () {
 
             tmpData.availableTrackX = tmpData.reqByConfigX && (tmpData.reqByDimensionsX || !this.props.hideUnnecessary);
             tmpData.availableTrackY = tmpData.reqByConfigY && (tmpData.reqByDimensionsY || !this.props.hideUnnecessary);
-            tmpData.displayableTrackX = tmpData.availableTrackX && (tmpData.realMovX && this.props.autoHide || !this.props.autoHide);
-            tmpData.displayableTrackY = tmpData.availableTrackY && (tmpData.realMovY && this.props.autoHide || !this.props.autoHide);
+            tmpData.displayableTrackX = tmpData.availableTrackX && (tmpData.realMovX && autoHide || !autoHide);
+            tmpData.displayableTrackY = tmpData.availableTrackY && (tmpData.realMovY && autoHide || !autoHide);
             tmpData.flashableTrackX = tmpData.availableTrackX; //&& this.props.flashTime > 0;
             tmpData.flashableTrackY = tmpData.availableTrackY; //&& this.props.flashTime > 0;
+            tmpData.startHidden = flashTime > 0 && flashTimeDelay > 0 && autoHide || autoHide && !flashTime;
 
             tmpData.displayableThumbX = tmpData.availableTrackX;
             tmpData.displayableThumbY = tmpData.availableTrackY;
-
-            //tmpData.displayableThumbX = tmpData.displayableTrackX && tmpData.thumbWidth !== tmpData.clientWidth;
-            //tmpData.displayableThumbY = tmpData.displayableTrackY && tmpData.thumbHeight !== tmpData.clientHeight;
-
-            /*tmpData.displayableTrackX = (tmpData.requireX || !this.props.hideUnnecessary) && this.props.showHorizontal;
-             tmpData.displayableTrackY = (tmpData.requireY || !this.props.hideUnnecessary) && this.props.showVertical;
-             tmpData.displayableThumbX = tmpData.displayableTrackX && tmpData.thumbWidth !== tmpData.clientWidth;
-             tmpData.displayableThumbY = tmpData.displayableTrackY && tmpData.thumbHeight !== tmpData.clientHeight;*/
 
             this.data = tmpData;
             this.hasData = true;
@@ -215,7 +214,6 @@ var ScrollDataManager = exports.ScrollDataManager = function () {
     }, {
         key: 'gatherDataFromThumbs',
         value: function gatherDataFromThumbs() {
-            //debugger;
 
             var tx = this.tnX.style.transform.match(/X\((.*)px/);
             var ty = this.tnY.style.transform.match(/Y\((.*)px/);
@@ -430,10 +428,10 @@ var MovementManager = exports.MovementManager = function () {
         this.lastValidDirection = AN;
         this.scrollStarted = false;
 
-        this.atTopEmitted = false;
-        this.atBottomEmitted = false;
-        this.atLeftEmitted = false;
-        this.atRightEmitted = false;
+        //this.atTopEmitted    = false;
+        //this.atBottomEmitted = false;
+        //this.atLeftEmitted   = false;
+        //this.atRightEmitted  = false;
 
         this.init();
     }
@@ -507,12 +505,12 @@ var MovementManager = exports.MovementManager = function () {
 
 
             if (!atTop && !atBottom) {
-                this.atTopEmitted = false;
-                this.atBottomEmitted = false;
+                //this.atTopEmitted    = false;
+                //this.atBottomEmitted = false;
             }
             if (!atLeft && !atRight) {
-                this.atLeftEmitted = false;
-                this.atRightEmitted = false;
+                //this.atLeftEmitted  = false;
+                //this.atRightEmitted = false;
             }
 
             if (this.dataManager.atTop && dir === UP) {
@@ -876,7 +874,6 @@ var ScrollingManager = exports.ScrollingManager = function () {
         this.debouncedOnScrollProps = this.debouncedOnScrollProps.bind(this);
         this.debouncedOnScrollFrameProps = this.debouncedOnScrollFrameProps.bind(this);
         this.callOnScrollProps = debounce(this.debouncedOnScrollProps, 0);
-        this.callOnScrollFrameProps = debounce(this.debouncedOnScrollFrameProps, 0);
     }
 
     /*** Initializer ***/
@@ -887,66 +884,53 @@ var ScrollingManager = exports.ScrollingManager = function () {
         value: function initialize() {
             var _this3 = this;
 
+            //Remove this class that is sett at rendering
             this.changesManager.removeClass(this.cont, 'initial');
 
+            // Due to time to takes to objects to pick up styles
+            // we set a mini timeout
             var to = setTimeout(function () {
 
                 _this3.dataManager.update(true);
+
                 _this3.initializeX();
                 _this3.initializeY();
                 _this3.flashBars(true);
+
                 clearTimeout(to);
             }, 0);
-
-            //this.initializeX();
-            //this.initializeY();
-            //this.flashBars( true );
         }
     }, {
         key: 'initializeX',
         value: function initializeX() {
-            var availableTrackX = this.dataManager.values.availableTrackX;
-            var _props = this.props,
-                flashTime = _props.flashTime,
-                flashTimeDelay = _props.flashTimeDelay,
-                autoHide = _props.autoHide;
+            var _dataManager$values = this.dataManager.values,
+                availableTrackX = _dataManager$values.availableTrackX,
+                startHidden = _dataManager$values.startHidden;
 
-            var startHidden = flashTime > 0 && flashTimeDelay > 0 && autoHide || autoHide && !flashTime;
 
             if (availableTrackX) {
                 this.resizeThumbX();
-                if (startHidden) {
-                    this.hideBar(HOR, true);
-                    this.hideBar(HOR);
-                } else {
-                    this.showBar(HOR);
-                }
+                if (startHidden) this.hideBarX();
+                if (!startHidden) this.showBarX();
                 return;
             }
-            this.hideBar(HOR, true);
+            this.disableBarX();
         }
     }, {
         key: 'initializeY',
         value: function initializeY() {
-            var availableTrackY = this.dataManager.values.availableTrackY;
-            var _props2 = this.props,
-                flashTime = _props2.flashTime,
-                flashTimeDelay = _props2.flashTimeDelay,
-                autoHide = _props2.autoHide;
+            var _dataManager$values2 = this.dataManager.values,
+                availableTrackY = _dataManager$values2.availableTrackY,
+                startHidden = _dataManager$values2.startHidden;
 
-            var startHidden = flashTime > 0 && flashTimeDelay > 0 && autoHide || autoHide && !flashTime;
 
             if (availableTrackY) {
                 this.resizeThumbY();
-                if (startHidden) {
-                    this.hideBar(VER, true);
-                    this.hideBar(VER);
-                } else {
-                    this.showBar(VER);
-                }
+                if (startHidden) this.hideBarY();
+                if (!startHidden) this.showBarY();
                 return;
             }
-            this.hideBar(VER, true);
+            this.disableBarY();
         }
 
         /*** Events ***/
@@ -1018,9 +1002,9 @@ var ScrollingManager = exports.ScrollingManager = function () {
                 dy = _movementManager$dire.dy,
                 isX = _movementManager$dire.isX,
                 isY = _movementManager$dire.isY;
-            var _dataManager$values = this.dataManager.values,
-                scrollTop = _dataManager$values.scrollTop,
-                scrollLeft = _dataManager$values.scrollLeft;
+            var _dataManager$values3 = this.dataManager.values,
+                scrollTop = _dataManager$values3.scrollTop,
+                scrollLeft = _dataManager$values3.scrollLeft;
 
 
             if (isY) {
@@ -1039,7 +1023,6 @@ var ScrollingManager = exports.ScrollingManager = function () {
             this.rafActions();
             this.raf = window.requestAnimationFrame(this.loopBinded);
             this.props.onScrollFrame(this.prepareExportableData());
-            //this.callOnScrollFrameProps();
         }
     }, {
         key: 'rafActions',
@@ -1053,29 +1036,29 @@ var ScrollingManager = exports.ScrollingManager = function () {
     }, {
         key: 'showBars',
         value: function showBars() {
-            var _dataManager$values2 = this.dataManager.values,
-                displayableTrackX = _dataManager$values2.displayableTrackX,
-                displayableTrackY = _dataManager$values2.displayableTrackY;
+            var _dataManager$values4 = this.dataManager.values,
+                displayableTrackX = _dataManager$values4.displayableTrackX,
+                displayableTrackY = _dataManager$values4.displayableTrackY;
 
 
             if (displayableTrackX) {
-                this.showBar(HOR);
+                this.showBarX();
                 this.moveThumbX();
                 this.resizeThumbX();
             }
 
             if (displayableTrackY) {
-                this.showBar(VER);
+                this.showBarY();
                 this.moveThumbY();
                 this.resizeThumbY();
             }
         }
     }, {
-        key: 'showBar',
-        value: function showBar(axis) {
+        key: '__to_delete_showBar',
+        value: function __to_delete_showBar(axis) {
             var disable = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-            //console.log("******", axis, disable, this.visibleY, this.visibleX);
+
             var object = axis === HOR ? this.tX : this.tY;
             if (!disable) {
                 this.adjustCounterpart(axis, 'show');
@@ -1085,15 +1068,17 @@ var ScrollingManager = exports.ScrollingManager = function () {
                 if (this['disable' + (axis === HOR ? 'X' : 'Y')] === true) {
                     this['disable' + (axis === HOR ? 'X' : 'Y')] = false;
                     this.changesManager.changeProperty(object, 'display', 'block');
+                    this.changesManager.changeProperty(object, 'opacity', '1');
                 }
                 return;
             }
             this['disable' + (axis === HOR ? 'X' : 'Y')] = false;
             this.changesManager.changeProperty(object, 'display', 'block');
+            this.changesManager.changeProperty(object, 'opacity', '1');
         }
     }, {
-        key: 'hideBar',
-        value: function hideBar(axis) {
+        key: '__to_delete_hideBar',
+        value: function __to_delete_hideBar(axis) {
             var disable = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
 
@@ -1102,10 +1087,72 @@ var ScrollingManager = exports.ScrollingManager = function () {
                 this.adjustCounterpart(axis, 'hide');
                 this['visible' + (axis === HOR ? 'X' : 'Y')] = false;
                 this.changesManager.addClass(object, 'inactive');
+                //this.changesManager.changeProperty( object, 'opacity', '0' );
                 return;
             }
             this['disable' + (axis === HOR ? 'X' : 'Y')] = true;
             this.changesManager.changeProperty(object, 'display', 'none');
+            //this.changesManager.changeProperty( object, 'opacity', '0' );
+        }
+    }, {
+        key: 'showBarX',
+        value: function showBarX() {
+            this.visibleX = true;
+            this.adjustCounterpart(HOR, 'show');
+            this.changesManager.removeClass(this.tX, 'inactive');
+            this.changesManager.changeProperty(this.tX, 'opacity', '1');
+            this.changesManager.changeProperty(this.tX, 'display', 'block');
+        }
+    }, {
+        key: 'hideBarX',
+        value: function hideBarX() {
+            this.visibleX = false;
+            this.adjustCounterpart(HOR, 'hide');
+            this.changesManager.addClass(this.tX, 'inactive');
+            this.changesManager.changeProperty(this.tX, 'opacity', '0');
+            this.changesManager.changeProperty(this.tX, 'display', 'block');
+        }
+    }, {
+        key: 'showBarY',
+        value: function showBarY() {
+            this.visibleY = true;
+            this.adjustCounterpart(VER, 'show');
+            this.changesManager.removeClass(this.tY, 'inactive');
+            this.changesManager.changeProperty(this.tY, 'opacity', '1');
+            this.changesManager.changeProperty(this.tY, 'display', 'block');
+        }
+    }, {
+        key: 'hideBarY',
+        value: function hideBarY() {
+            this.visibleY = false;
+            this.adjustCounterpart(VER, 'hide');
+            this.changesManager.addClass(this.tY, 'inactive');
+            this.changesManager.changeProperty(this.tY, 'opacity', '0');
+            this.changesManager.changeProperty(this.tY, 'display', 'block');
+        }
+    }, {
+        key: 'disableBarX',
+        value: function disableBarX() {
+            this.changesManager.addClass(this.tX, 'disabled');
+            this.changesManager.changeProperty(this.tX, 'display', 'none');
+        }
+    }, {
+        key: 'enableBarX',
+        value: function enableBarX() {
+            this.changesManager.removeClass(this.tX, 'disabled');
+            this.changesManager.changeProperty(this.tX, 'display', 'none');
+        }
+    }, {
+        key: 'disableBarY',
+        value: function disableBarY() {
+            this.changesManager.addClass(this.tY, 'disabled');
+            this.changesManager.changeProperty(this.tY, 'display', 'none');
+        }
+    }, {
+        key: 'enableBarY',
+        value: function enableBarY() {
+            this.changesManager.removeClass(this.tY, 'disabled');
+            this.changesManager.changeProperty(this.tY, 'display', 'block');
         }
     }, {
         key: 'moveThumbX',
@@ -1137,8 +1184,8 @@ var ScrollingManager = exports.ScrollingManager = function () {
                     clearTimeout(_this4.autoHideTimeout);
 
                     if (!_this4.scrolling && !_this4.cancelHiding) {
-                        if (!_this4.mouseOverX) _this4.hideBar(HOR);
-                        if (!_this4.mouseOverY) _this4.hideBar(VER);
+                        if (!_this4.mouseOverX) _this4.hideBarX();
+                        if (!_this4.mouseOverY) _this4.hideBarY();
                     }
                 }, this.props.autoHideTimeout);
             }
@@ -1149,17 +1196,18 @@ var ScrollingManager = exports.ScrollingManager = function () {
             var _this5 = this;
 
             var useDelay = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-            var _dataManager$values3 = this.dataManager.values,
-                flashableTrackX = _dataManager$values3.flashableTrackX,
-                flashableTrackY = _dataManager$values3.flashableTrackY;
+            var _dataManager$values5 = this.dataManager.values,
+                flashableTrackX = _dataManager$values5.flashableTrackX,
+                flashableTrackY = _dataManager$values5.flashableTrackY;
 
+            //If flashTime is 0 there is no point showing ti
+
+            if (this.props.flashTime === 0) return;
 
             var flash = setTimeout(function () {
 
-                if (flashableTrackX) _this5.showBar(HOR, true);
-                if (flashableTrackX) _this5.showBar(HOR);
-                if (flashableTrackY) _this5.showBar(VER, true);
-                if (flashableTrackY) _this5.showBar(VER);
+                if (flashableTrackX) _this5.showBarX();
+                if (flashableTrackY) _this5.showBarY();
                 clearTimeout(flash);
 
                 if (!_this5.props.autoHide) return;
@@ -1167,8 +1215,8 @@ var ScrollingManager = exports.ScrollingManager = function () {
                 _this5.flashTimeout = setTimeout(function () {
 
                     clearTimeout(_this5.flashTimeout);
-                    if (flashableTrackX && !_this5.mouseOverX) _this5.hideBar(HOR);
-                    if (flashableTrackY && !_this5.mouseOverY) _this5.hideBar(VER);
+                    if (flashableTrackX && !_this5.mouseOverX) _this5.hideBarX();
+                    if (flashableTrackY && !_this5.mouseOverY) _this5.hideBarY();
                 }, _this5.props.flashTime);
             }, useDelay ? this.props.flashTimeDelay : 0);
         }
@@ -1347,11 +1395,6 @@ var DisplayManager = exports.DisplayManager = function DisplayManager(refs) {
 };
 
 var StyleManager = exports.StyleManager = function () {
-    _createClass(StyleManager, [{
-        key: 'init',
-        value: function init() {}
-    }]);
-
     function StyleManager(styleID) {
         var namespace = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 

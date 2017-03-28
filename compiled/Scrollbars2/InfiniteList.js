@@ -33,6 +33,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } //noinspection JSUnresolvedVariable
 
 
+var emptyArray = [];
+
 var InfiniteList = function (_Component) {
     _inherits(InfiniteList, _Component);
 
@@ -43,9 +45,23 @@ var InfiniteList = function (_Component) {
 
         (0, _reactAutobindHelper2.default)(_this);
 
-        _this.listenScroll = false;
-        console.log(props.items);
-        _this.state = _extends({}, _this.resetPagesObject(props));
+        _this.state = { currentPage: 0 };
+
+        //Pages Info
+        _this.pData = new _immutable.List();
+        _this.pTotal = 0;
+        _this.pLeftOvers = 0;
+        _this.pRefs = {};
+
+        //Heights
+        _this.hGhost = 0;
+        _this.hItems = 0;
+
+        //Flags
+        _this.isIterable = false;
+        _this.isListening = false;
+
+        _this.resetPagesObject(props);
         return _this;
     }
 
@@ -57,20 +73,23 @@ var InfiniteList = function (_Component) {
         value: function resetPagesObject(props) {
             var _this2 = this;
 
-            this.listenScroll = false;
-            var length = _immutable.Iterable.isIterable(props.items) ? props.items.size : props.items.length;
-            this.totalPages = Math.ceil(length / props.visibles);
-            this.leftOvers = length % props.visibles;
+            //Flags
+            this.isListening = false;
+            this.isIterable = _immutable.Iterable.isIterable(props.items);
 
-            return {
-                pagesData: new _immutable.List().setSize(this.totalPages).map(function (x, y) {
-                    return _this2.createPagesObject(y, props);
-                }),
-                currentPage: 0,
-                ghostHeightExpected: props.defaultRowHeight * length,
-                ghostHeight: props.defaultRowHeight * length,
-                itemsHeight: props.defaultRowHeight * length
-            };
+            var length = this.isIterable ? props.items.size : props.items.length;
+            var baseHeight = length <= props.visibles ? 0 : props.defaultRowHeight * length;
+
+            //Pages Info
+            this.pTotal = Math.ceil(length / props.visibles);
+            this.pLeftOvers = length % props.visibles;
+            this.pData = new _immutable.List().setSize(this.pTotal).map(function (x, y) {
+                return _this2.createPagesObject(y, props);
+            });
+
+            //Heights
+            this.hGhost = baseHeight;
+            this.hItems = baseHeight;
         }
     }, {
         key: 'createPagesObject',
@@ -79,12 +98,12 @@ var InfiniteList = function (_Component) {
                 defaultRowHeight = props.defaultRowHeight;
 
 
-            var length = _immutable.Iterable.isIterable(props.items) ? props.items.size : props.items.length;
-            var isLast = page === this.totalPages - 1;
+            var length = this.isIterable ? props.items.size : props.items.length;
+            var isLast = page === this.pTotal - 1;
             var from = page * visibles;
             var to = Math.min(from + visibles, length);
             var estimatedHeight = visibles * defaultRowHeight;
-            var height = isLast && this.leftOvers > 0 ? this.leftOvers * defaultRowHeight : estimatedHeight;
+            var height = isLast && this.pLeftOvers > 0 ? this.pLeftOvers * defaultRowHeight : estimatedHeight;
 
             return {
                 page: page, from: from, to: to, height: height,
@@ -92,52 +111,55 @@ var InfiniteList = function (_Component) {
                 cssClass: 'infinityPage page' + page,
                 limitTop: -1,
                 limitBottom: 1000000000 * 100000000,
-                initialized: false
+                initialized: false,
+                itemsPerPage: visibles
             };
         }
     }, {
         key: 'calculateLimits',
         value: function calculateLimits() {
-            var _state = this.state,
-                currentPage = _state.currentPage,
-                pagesData = _state.pagesData;
+            var currentPage = this.state.currentPage;
+
+            var currentPageData = this.pData.get(currentPage);
+
+            if (!currentPageData) {
+                return;
+            }
+
             var itemsContainerRef = this.refs.itemsContainerRef;
 
-            var currentPageData = pagesData.get(currentPage);
-            var currentPageDomObj = this.refs['Page' + currentPage];
+            var currentPageDomObj = this.pRefs['Page' + currentPage];
+            var isInitialized = currentPageData.initialized === true;
 
-            if (currentPageData && currentPageDomObj && currentPageData.initialized === false) {
+            if (currentPageData && currentPageDomObj && !isInitialized) {
                 var offsetHeight = currentPageDomObj.offsetHeight,
                     offsetTop = currentPageDomObj.offsetTop;
 
 
-                var ghostHeight = pagesData.reduce(function (acc, obj) {
+                this.hItems = itemsContainerRef.offsetHeight;
+                this.hGhost = this.pData.reduce(function (acc, obj) {
                     return acc + obj.height;
                 }, 0);
-
-                this.setState({
-                    ghostHeight: ghostHeight,
-                    pagesData: pagesData.update(currentPage, function (val) {
-                        return _extends({}, val, {
-                            height: offsetHeight,
-                            limitTop: offsetTop,
-                            limitBottom: offsetTop + offsetHeight,
-                            initialized: true
-                        });
-                    }),
-                    itemsHeight: itemsContainerRef.offsetHeight
-                }, this.enableScrollListening);
+                this.pData = this.pData.update(currentPage, function (val) {
+                    return _extends({}, val, {
+                        height: offsetHeight,
+                        limitTop: offsetTop,
+                        limitBottom: offsetTop + offsetHeight,
+                        initialized: true
+                    });
+                });
+                this.enableScrollListening();
             }
         }
     }, {
         key: 'enableScrollListening',
         value: function enableScrollListening() {
-            this.listenScroll = true;
+            this.isListening = true;
         }
     }, {
         key: 'disableScrollListening',
         value: function disableScrollListening() {
-            this.listenScroll = false;
+            this.isListening = false;
         }
 
         /** E V E N T S **/
@@ -152,19 +174,18 @@ var InfiniteList = function (_Component) {
                 realMovY = _ref.realMovY;
 
 
-            if (!this.listenScroll || !this.state.pagesData.get(this.state.currentPage)) return;
+            if (!this.isListening || !this.pData.get(this.state.currentPage)) return;
 
-            var _state2 = this.state,
-                currentPage = _state2.currentPage,
-                pagesData = _state2.pagesData;
+            var currentPage = this.state.currentPage;
+            var pData = this.pData;
             var _props = this.props,
                 defaultRowHeight = _props.defaultRowHeight,
                 visibles = _props.visibles;
 
-            var _pagesData$get = pagesData.get(currentPage),
-                limitTop = _pagesData$get.limitTop,
-                limitBottom = _pagesData$get.limitBottom,
-                height = _pagesData$get.height;
+            var _pData$get = pData.get(currentPage),
+                limitTop = _pData$get.limitTop,
+                limitBottom = _pData$get.limitBottom,
+                height = _pData$get.height;
 
             var fixedScrollTop = scrollTop + clientHeight;
             var nextPage = currentPage + 1;
@@ -175,7 +196,7 @@ var InfiniteList = function (_Component) {
 
             //When Scroll moves big distances
             if (isBigMove) {
-                var midList = pagesData.size / 2;
+                var midList = pData.size / 2;
                 var tgtPageCalc = fixedScrollTop / defaultRowHeight / visibles;
                 var tgtPage = tgtPageCalc > midList ? Math.round(tgtPageCalc) : Math.floor(tgtPageCalc);
 
@@ -184,7 +205,7 @@ var InfiniteList = function (_Component) {
                 return;
             }
 
-            if (fixedScrollTop > limitBottom + 1 && isDown && nextPage < pagesData.size) {
+            if (fixedScrollTop > limitBottom + 1 && isDown && nextPage < pData.size) {
                 this.disableScrollListening();
                 this.setState({ currentPage: nextPage }, this.enableScrollListening);
             }
@@ -207,12 +228,12 @@ var InfiniteList = function (_Component) {
             if (!(0, _shallowequal2.default)(this.props.items, nextProps.items)) {
                 var scrollbarsRef = this.refs.scrollbarsRef;
 
-                var recalculatedState = this.resetPagesObject(nextProps, false);
 
+                this.resetPagesObject(nextProps, false);
                 this.disableScrollListening();
 
-                this.setState(_extends({}, recalculatedState, { currentPage: 0 }), function () {
-                    if (!scrollbarsRef) return;
+                this.setState({ currentPage: 0 }, function () {
+                    if (!scrollbarsRef || !scrollbarsRef.api) return;
                     scrollbarsRef.update();
                     scrollbarsRef.api.toTop();
                     _this3.enableScrollListening();
@@ -230,40 +251,15 @@ var InfiniteList = function (_Component) {
             this.calculateLimits();
         }
 
-        /** R E N D E R S **/
+        /** R E N D E R **/
         /** ************************************************* **/
 
-    }, {
-        key: 'renderItems',
-        value: function renderItems(slicedItems) {
-            if (_immutable.Iterable.isIterable(this.props.items)) {
-                return slicedItems.entrySeq().map(this.renderItemsSimple);
-            }
-            return slicedItems.map(this.renderItemsSimple);
-        }
-    }, {
-        key: 'renderItemsSimple',
-        value: function renderItemsSimple(x, y) {
-            var isIterable = _immutable.Iterable.isIterable(this.props.items);
-            var object = isIterable ? x[1] : x;
-            var index = isIterable ? x[0] : y;
-
-            return _react2.default.createElement(
-                'div',
-                { className: 'itemWrapper itemWrapper' + index, key: 'item_' + index },
-                this.props.renderFunc(object, index)
-            );
-        }
     }, {
         key: 'render',
         value: function render() {
             var _this4 = this;
 
-            var _state3 = this.state,
-                currentPage = _state3.currentPage,
-                pagesData = _state3.pagesData,
-                itemsHeight = _state3.itemsHeight,
-                ghostHeight = _state3.ghostHeight;
+            var currentPage = this.state.currentPage;
 
 
             return _react2.default.createElement(
@@ -272,30 +268,35 @@ var InfiniteList = function (_Component) {
                 _react2.default.createElement(
                     'div',
                     { className: 'items', ref: 'itemsContainerRef', style: { position: 'absolute', width: '100%' } },
-                    pagesData.map(function (object) {
+                    this.pData.map(function (object) {
                         var page = object.page,
                             from = object.from,
-                            to = object.to,
-                            key = object.key,
-                            cssClass = object.cssClass,
-                            height = object.height;
+                            to = object.to;
 
 
                         var isRenderable = page >= currentPage - 1 && page <= currentPage + 1;
-                        var pageStyle = isRenderable ? {} : { height: height };
-                        var pageItems = isRenderable ? _this4.props.items.slice(from, to) : null;
-                        var className = cssClass + (isRenderable ? " renderable" : "");
+                        var _loopItems = isRenderable ? _this4.props.items.slice(from, to) : emptyArray;
+                        var loopItems = _this4.isIterable && isRenderable ? _loopItems.entrySeq() : _loopItems;
 
-                        return _react2.default.createElement(
-                            'div',
-                            { key: key, ref: key, className: className, style: pageStyle },
-                            isRenderable ? _this4.renderItems(pageItems) : pageItems
-                        );
+                        return _react2.default.createElement(PageInfiniteList, {
+                            key: object.key,
+                            ref: _this4.getPageRef,
+                            pageData: object,
+                            pageItems: loopItems,
+                            renderFunc: _this4.props.renderFunc,
+                            isRenderable: isRenderable,
+                            isIterable: _this4.isIterable
+                        });
                     })
                 ),
                 _react2.default.createElement('div', { ref: 'ghost', className: 'ghost',
-                    style: { height: Math.min(itemsHeight, ghostHeight) } })
+                    style: { height: Math.min(this.hItems, this.hGhost) } })
             );
+        }
+    }, {
+        key: 'getPageRef',
+        value: function getPageRef(obj) {
+            if (obj) this.pRefs[obj.pageKey] = obj.refs['page'];
         }
     }]);
 
@@ -309,5 +310,68 @@ InfiniteList.propTypes = {
     renderFunc: _react.PropTypes.func.isRequired,
     defaultRowHeight: _react.PropTypes.number.isRequired,
     totalItems: _react.PropTypes.number.isRequired
+};
+
+var PageInfiniteList = function (_Component2) {
+    _inherits(PageInfiniteList, _Component2);
+
+    function PageInfiniteList(props) {
+        _classCallCheck(this, PageInfiniteList);
+
+        var _this5 = _possibleConstructorReturn(this, (PageInfiniteList.__proto__ || Object.getPrototypeOf(PageInfiniteList)).call(this, props));
+
+        _this5.normalClass = props.pageData.cssClass;
+        _this5.renderClass = props.pageData.cssClass + " renderable";
+        _this5.emptyStyle = {};
+        _this5.pageKey = props.pageData.key;
+        return _this5;
+    }
+
+    _createClass(PageInfiniteList, [{
+        key: 'shouldComponentUpdate',
+        value: function shouldComponentUpdate(nextProps) {
+            return !(0, _shallowequal2.default)(nextProps, this.props);
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            var _this6 = this;
+
+            var _props2 = this.props,
+                pageData = _props2.pageData,
+                pageItems = _props2.pageItems,
+                isRenderable = _props2.isRenderable,
+                isIterable = _props2.isIterable;
+
+            var pageStyle = isRenderable ? this.emptyStyle : { height: pageData.height };
+
+            return _react2.default.createElement(
+                'div',
+                { ref: 'page', className: isRenderable ? this.renderClass : this.normalClass, style: pageStyle },
+                isRenderable && pageItems.map(function (x, y) {
+
+                    var object = isIterable ? x[1] : x;
+                    var index = isIterable ? x[0] : y;
+                    var indx = y + _this6.props.pageData.page * _this6.props.pageData.itemsPerPage;
+
+                    return _react2.default.createElement(
+                        'div',
+                        { className: 'itemWrapper itemWrapper' + index, key: 'item_' + index },
+                        isRenderable && _this6.props.renderFunc(object, index, indx)
+                    );
+                })
+            );
+        }
+    }]);
+
+    return PageInfiniteList;
+}(_react.Component);
+
+PageInfiniteList.propTypes = {
+    pageData: _react.PropTypes.any,
+    pageItems: _react.PropTypes.any,
+    renderFunc: _react.PropTypes.func,
+    isRenderable: _react.PropTypes.bool,
+    isIterable: _react.PropTypes.bool
 };
 exports.default = InfiniteList;
