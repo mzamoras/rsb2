@@ -50,9 +50,11 @@
 @thumbV_active_color: @thumb_active_color;
 @thumbH_active_color: @thumb_active_color;
 
+@baseTransition: 200ms;
+@baseTransitionDelay: 150ms;
 
-@delayedTransition: 150ms 400ms;
-@immediateTransition: 150ms 0ms;
+@delayedTransition: @baseTransitionDelay @baseTransition;
+@immediateTransition: @baseTransition 0ms;
 
 @import "variables";
 
@@ -197,7 +199,7 @@ body.sb2-dragging{
 
 .track_elem(@element, @normal, @hover, @active){
     &.sb2@{element} {
-        transition: opacity 200ms;
+        transition: opacity @baseTransition, background @baseTransition;
         background-color: @normal;
 
         & when (@element = h){
@@ -275,12 +277,12 @@ body.sb2-dragging{
         //transition-delay: 300ms;
 
         & when (@element = h){
-            transition: height @delayedTransition;
+            transition: height @delayedTransition, width @baseTransition, background @baseTransition;
             height: @thumbSize;
         }
 
         & when (@element = v){
-            transition: width @delayedTransition;
+            transition: width @delayedTransition, height @baseTransition, background @baseTransition;
             width: @thumbSize;
         }
 

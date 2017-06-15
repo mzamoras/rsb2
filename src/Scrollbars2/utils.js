@@ -741,9 +741,9 @@ export class ScrollingManager {
         this.mouseOverX      = false;
         this.mouseOverY      = false;
         this.visibleX        = false;
-        //this.disableX        = false;
+        this.disabledX       = false;
         this.visibleY        = false;
-        //this.disableY        = false;
+        this.disabledY       = false;
 
         this.tX   = refs['trackHorizontal'];
         this.tY   = refs['trackVertical'];
@@ -786,8 +786,13 @@ export class ScrollingManager {
 
         if ( availableTrackX ) {
             this.resizeThumbX();
-            if ( startHidden )  this.hideBarX();
+            if ( startHidden ) this.hideBarX();
             if ( !startHidden ) this.showBarX();
+            if(this.disabledX){
+                this.dataManager.update( true ).then( ()=>{
+                    this.resizeThumbX();
+                } );
+            }
             return;
         }
         this.disableBarX();
@@ -799,9 +804,15 @@ export class ScrollingManager {
         const { availableTrackY, startHidden } = this.dataManager.values;
 
         if ( availableTrackY ) {
+
             this.resizeThumbY();
-            if ( startHidden )  this.hideBarY();
+            if ( startHidden ) this.hideBarY();
             if ( !startHidden ) this.showBarY();
+            if(this.disabledY){
+                this.dataManager.update( true ).then( ()=>{
+                    this.resizeThumbY();
+                } );
+            }
             return;
         }
         this.disableBarY();
@@ -943,7 +954,7 @@ export class ScrollingManager {
         //this.changesManager.changeProperty( object, 'opacity', '0' );
     }
 
-    showBarX(){
+    showBarX() {
         this.visibleX = true;
         this.adjustCounterpart( HOR, 'show' );
         this.changesManager.removeClass( this.tX, 'inactive' );
@@ -951,7 +962,7 @@ export class ScrollingManager {
         this.changesManager.changeProperty( this.tX, 'display', 'block' );
     }
 
-    hideBarX(){
+    hideBarX() {
         this.visibleX = false;
         this.adjustCounterpart( HOR, 'hide' );
         this.changesManager.addClass( this.tX, 'inactive' );
@@ -959,7 +970,7 @@ export class ScrollingManager {
         this.changesManager.changeProperty( this.tX, 'display', 'block' );
     }
 
-    showBarY(){
+    showBarY() {
         this.visibleY = true;
         this.adjustCounterpart( VER, 'show' );
         this.changesManager.removeClass( this.tY, 'inactive' );
@@ -967,7 +978,7 @@ export class ScrollingManager {
         this.changesManager.changeProperty( this.tY, 'display', 'block' );
     }
 
-    hideBarY(){
+    hideBarY() {
         this.visibleY = false;
         this.adjustCounterpart( VER, 'hide' );
         this.changesManager.addClass( this.tY, 'inactive' );
@@ -975,26 +986,29 @@ export class ScrollingManager {
         this.changesManager.changeProperty( this.tY, 'display', 'block' );
     }
 
-    disableBarX(){
+    disableBarX() {
+        this.disabledX = true;
         this.changesManager.addClass( this.tX, 'disabled' );
         this.changesManager.changeProperty( this.tX, 'display', 'none' );
     }
 
-    enableBarX(){
+    enableBarX() {
+        this.disabledX = false;
         this.changesManager.removeClass( this.tX, 'disabled' );
         this.changesManager.changeProperty( this.tX, 'display', 'none' );
     }
 
-    disableBarY(){
+    disableBarY() {
+        this.disabledY = true;
         this.changesManager.addClass( this.tY, 'disabled' );
         this.changesManager.changeProperty( this.tY, 'display', 'none' );
     }
 
-    enableBarY(){
+    enableBarY() {
+        this.disabledY = false;
         this.changesManager.removeClass( this.tY, 'disabled' );
         this.changesManager.changeProperty( this.tY, 'display', 'block' );
     }
-
 
 
     moveThumbX() {
@@ -1027,8 +1041,8 @@ export class ScrollingManager {
                 clearTimeout( this.autoHideTimeout );
 
                 if ( !this.scrolling && !this.cancelHiding ) {
-                    if ( !this.mouseOverX ) this.hideBarX( );
-                    if ( !this.mouseOverY ) this.hideBarY( );
+                    if ( !this.mouseOverX ) this.hideBarX();
+                    if ( !this.mouseOverY ) this.hideBarY();
                 }
             }, this.props.autoHideTimeout );
         }
@@ -1051,8 +1065,8 @@ export class ScrollingManager {
             this.flashTimeout = setTimeout( () => {
 
                 clearTimeout( this.flashTimeout );
-                if ( flashableTrackX && !this.mouseOverX ) this.hideBarX( );
-                if ( flashableTrackY && !this.mouseOverY ) this.hideBarY( );
+                if ( flashableTrackX && !this.mouseOverX ) this.hideBarX();
+                if ( flashableTrackY && !this.mouseOverY ) this.hideBarY();
 
             }, this.props.flashTime );
         }, useDelay ? this.props.flashTimeDelay : 0 );

@@ -75,6 +75,7 @@ export const thumbnails = {
 };
 
 export const thumbnailY = {
+    //height:'100%'
    /* ...thumbnails,
     minHeight: 30,
     width    : 8,*/

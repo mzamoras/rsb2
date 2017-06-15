@@ -18,8 +18,8 @@
  *
  */
 
-//noinspection JSUnresolvedVariable
-import React, {Component, PropTypes} from 'react';
+import React from 'react';
+import PropTypes from 'prop-types'
 import autobind from 'react-autobind-helper';
 
 import TinyEmitter from 'tiny-emitter';
@@ -43,7 +43,7 @@ import scrollbarsStyle from './scrollbarsStyle';
 import scrollbarsClassNames from './scrollbarsClassNames';
 
 
-export class Scrollbars2 extends Component {
+export class Scrollbars2 extends React.Component {
     constructor( props ) {
 
         super( props );
@@ -117,7 +117,7 @@ export class Scrollbars2 extends Component {
         this.api.enable      = () => this.scrollingManager.enable();
         this.api.disable     = () => this.scrollingManager.disable();
         this.api.cancelFlash = () => this.scrollingManager.cancelFlash();
-        this.api.update      = () => this.scrollingManager.update();
+        this.api.update      = () => this.update();
         this.api.data        = () => this.scrollingManager.prepareExportableData();
 
         this.api.getPositionY = () => this.scrollingManager.prepareExportableData().scrollTop;
@@ -129,8 +129,12 @@ export class Scrollbars2 extends Component {
     update() {
         if ( !this.scrollDataManager ) return;
         this.scrollDataManager.update();
-        this.scrollingManager.initializeX();
-        this.scrollingManager.initializeY();
+
+        const to = setTimeout( () => {
+            this.scrollingManager.initializeX();
+            this.scrollingManager.initializeY();
+            clearTimeout( to );
+        }, 20 );
     };
 
 
@@ -253,7 +257,10 @@ export class Scrollbars2 extends Component {
         this.styleTagId      = isDefaultStyle ? cssStylesheetID : CSS_TAG_ID + "_" + cssStyleClass;
         this.styleClass      = cssStyleClass;
         this.styleManager    = new StyleManager( this.styleTagId, this.styleClass );
-        this.styleManager.setParsedRules( this.props.parsedStyle || defaultParsedStyle );
+
+        if( this.props.injectStyle || this.props.parsedStyle){
+            this.styleManager.setParsedRules( this.props.parsedStyle || defaultParsedStyle );
+        }
 
     };
 
@@ -327,6 +334,7 @@ Scrollbars2.propTypes = {
     tracksStyle   : PropTypes.object,
     thumbsStyle   : PropTypes.object,
     parsedStyle   : PropTypes.string,
+    injectStyle   : PropTypes.bool,
 
     preventScrolling : PropTypes.bool,
     updateOnUpdates  : PropTypes.bool,
@@ -368,6 +376,7 @@ Scrollbars2.defaultProps = {
     tracksStyle   : {},
     thumbsStyle   : {},
     parsedStyle   : null,
+    injectStyle   : true,
 
     preventScrolling : true,
     updateOnUpdates  : true,

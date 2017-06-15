@@ -55,7 +55,6 @@ class Chunk {
         this._ghostBottomHg = null;
         this._allChunksHg   = null;
 
-
     }
 
     /** ****** **/
@@ -271,7 +270,7 @@ export class InfiniteScrollHandler {
 
         this.pastPosition  = 0;
         this.positionDelta = 0;
-
+        console.log("--", this);
     }
 
     /** S E T T E R S  A N D   G E T T E R S **/
@@ -303,11 +302,19 @@ export class InfiniteScrollHandler {
      */
     calculateChunks( defaultChunkIndex = 0 ) {
         const { totalItems, visibleItems, offset } = this;
+        const actualPerChunk =  visibleItems + (offset * 2);
 
-        const leftOvers = Math.ceil( totalItems % visibleItems );
-        let chunkSize   = leftOvers <= offset ? Math.floor( totalItems / visibleItems ) : Math.ceil( totalItems / visibleItems );
+        //const leftOvers = Math.ceil( totalItems % visibleItems );
+        const leftOvers = Math.ceil( totalItems % actualPerChunk );
+        //let chunkSize   = leftOvers <= offset ? Math.floor( totalItems / visibleItems ) : Math.ceil( totalItems / visibleItems );
+        //let chunkSize   = leftOvers <= offset ? Math.floor( totalItems / actualPerChunk ) : Math.ceil( totalItems / actualPerChunk );
+        let chunkSize   = Math.ceil( totalItems / actualPerChunk );
         let index       = 0;
         let newObject   = null;
+
+        if( totalItems <= actualPerChunk ){
+            chunkSize = 0;
+        }
 
         while ( index < chunkSize ) {
             newObject = new Chunk( index, chunkSize, totalItems, visibleItems, offset, leftOvers );
@@ -580,6 +587,7 @@ export class InfiniteScrollHandler {
         //const difference = Math.abs( scrollTop - this.limitBottom  );
         // console.log( "change:",scrollTop - this.pastPosition );
         if ( direction === 'down' && this.limitBottom <= scrollTop ) {
+            //debugger;
             console.log( "%cDOWN:", "font-weight:bold; font-size:14px; color:red;", scrollTop - this.pastPosition );
             //Probably when css is not loaded
             if ( this.viewportHg > this.bodyHg ) {

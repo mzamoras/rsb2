@@ -1,14 +1,16 @@
-//noinspection JSUnresolvedVariable
-import React, {Component, PropTypes} from 'react';
+
+import React from 'react';
+import PropTypes from 'prop-types'
+import classNames from 'classnames';
 import shallowEqual from 'shallowequal';
 import {Scrollbars2} from '../index';
 import autobind from 'react-autobind-helper';
-import {List, Iterable} from 'immutable';
+import {is, List, Iterable} from 'immutable';
 
 const emptyArray = [];
 
 
-class InfiniteList extends Component {
+class InfiniteList extends React.Component {
 
     constructor( props ) {
 
@@ -28,8 +30,8 @@ class InfiniteList extends Component {
         this.hItems = 0;
 
         //Flags
-        this.isIterable    = false;
-        this.isListening   = false;
+        this.isIterable  = false;
+        this.isListening = false;
 
         this.resetPagesObject( props );
     }
@@ -40,8 +42,8 @@ class InfiniteList extends Component {
     resetPagesObject( props ) {
 
         //Flags
-        this.isListening   = false;
-        this.isIterable    = Iterable.isIterable( props.items );
+        this.isListening = false;
+        this.isIterable  = Iterable.isIterable( props.items );
 
         const length     = this.isIterable ? props.items.size : props.items.length;
         const baseHeight = length <= props.visibles ? 0 : props.defaultRowHeight * length;
@@ -78,11 +80,11 @@ class InfiniteList extends Component {
         }
     }
 
-    calculateLimits( ) {
+    calculateLimits() {
         const { currentPage }       = this.state;
         const currentPageData       = this.pData.get( currentPage );
 
-        if(!currentPageData){
+        if ( !currentPageData ) {
             return;
         }
 
@@ -165,16 +167,17 @@ class InfiniteList extends Component {
     componentWillUpdate( nextProps ) {
 
         //When the number of items has changed
-        if ( !shallowEqual( this.props.items, nextProps.items ) ) {
-
+        //if ( !shallowEqual( this.props.items, nextProps.items ) ) {
+        if ( !is( this.props.items, nextProps.items ) ) {
+            console.log( 'differentItems', !shallowEqual( this.props.items, nextProps.items ) );
             const { scrollbarsRef }     = this.refs;
 
             this.resetPagesObject( nextProps, false );
             this.disableScrollListening();
 
             this.setState( { currentPage: 0 }, () => {
-                if ( !scrollbarsRef || !scrollbarsRef.api) return;
-                scrollbarsRef.update();
+                if ( !scrollbarsRef || !scrollbarsRef.api ) return;
+                scrollbarsRef.api.update();
                 scrollbarsRef.api.toTop();
                 this.enableScrollListening()
             } );
@@ -195,13 +198,18 @@ class InfiniteList extends Component {
 
     render() {
 
-        const { currentPage }   = this.state;
+        const { scrollbarProps, className } = this.props;
+
+        const { currentPage }    = this.state;
+        const { pData }          = this;
 
         return (
-            <Scrollbars2 onScrollFrame={this.onScrollFrame} thumbMinSize={30} ref="scrollbarsRef">
-                <div className="items" ref='itemsContainerRef' style={{ position: 'absolute', width: '100%' }} >
+            <Scrollbars2 {...scrollbarProps} onScrollFrame={this.onScrollFrame} thumbMinSize={30} ref="scrollbarsRef" >
 
-                    { this.pData.map( ( object ) => {
+                <div className={classNames( 'items', className )} ref='itemsContainerRef'
+                     style={{ position: 'absolute', width: '100%' }} >
+
+                    { pData.map( ( object ) => {
                         const { page, from, to } = object;
 
                         const isRenderable = page >= currentPage - 1 && page <= currentPage + 1;
@@ -217,6 +225,7 @@ class InfiniteList extends Component {
                                 renderFunc={this.props.renderFunc}
                                 isRenderable={ isRenderable }
                                 isIterable={this.isIterable}
+                                className={this.props.pageClassName}
                             />
                         )
                     } ) }
@@ -232,6 +241,10 @@ class InfiniteList extends Component {
         if ( obj ) this.pRefs[obj.pageKey] = obj.refs['page']
     }
 
+    static defaultProps = {
+        scrollbarProps: {}
+    };
+
     static propTypes = {
         items           : PropTypes.any.isRequired,
         visibles        : PropTypes.number,
@@ -239,17 +252,21 @@ class InfiniteList extends Component {
         renderFunc      : PropTypes.func.isRequired,
         defaultRowHeight: PropTypes.number.isRequired,
         totalItems      : PropTypes.number.isRequired,
+        scrollbarProps  : PropTypes.object,
+        className       : PropTypes.string,
+        pageClassName   : PropTypes.string,
     }
 }
 
-class PageInfiniteList extends Component {
+/**  P A G E   C O M P O N E N T **/
+/** ************************************************* **/
+class PageInfiniteList extends React.Component {
 
     constructor( props ) {
         super( props );
-        this.normalClass = props.pageData.cssClass;
-        this.renderClass = props.pageData.cssClass + " renderable";
-        this.emptyStyle  = {};
-        this.pageKey     = props.pageData.key;
+
+        this.emptyStyle = {};
+        this.pageKey    = props.pageData.key;
     }
 
     shouldComponentUpdate( nextProps ) {
@@ -257,11 +274,15 @@ class PageInfiniteList extends Component {
     }
 
     render() {
-        const { pageData, pageItems, isRenderable, isIterable } = this.props;
-        const pageStyle                                         = isRenderable ? this.emptyStyle : { height: pageData.height };
+        const { pageData, pageItems, isRenderable, isIterable, className } = this.props;
+
+        const pageStyle = isRenderable ? this.emptyStyle : { height: pageData.height };
+        const cssClass  = classNames( this.props.pageData.cssClass, className, {
+            renderable: isRenderable
+        } );
 
         return (
-            <div ref="page" className={isRenderable ? this.renderClass : this.normalClass } style={pageStyle} >
+            <div ref="page" className={cssClass} style={pageStyle} >
                 { isRenderable && pageItems.map( ( x, y ) => {
 
                     const object = isIterable ? x[1] : x;
@@ -284,6 +305,7 @@ class PageInfiniteList extends Component {
         renderFunc  : PropTypes.func,
         isRenderable: PropTypes.bool,
         isIterable  : PropTypes.bool,
+        className   : PropTypes.string,
     }
 }
 

@@ -11,6 +11,10 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
+var _propTypes = require('prop-types');
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
 var _reactAutobindHelper = require('react-autobind-helper');
 
 var _reactAutobindHelper2 = _interopRequireDefault(_reactAutobindHelper);
@@ -55,9 +59,6 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 *
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 */
 
-//noinspection JSUnresolvedVariable
-
-
 var defaultParsedStyle = require('to-string!css!less!./style/style.less');
 
 var CSS_CLASS = 'sb2-scrollbars2';
@@ -66,8 +67,8 @@ var noop = function noop() {
     return null;
 };
 
-var Scrollbars2 = exports.Scrollbars2 = function (_Component) {
-    _inherits(Scrollbars2, _Component);
+var Scrollbars2 = exports.Scrollbars2 = function (_React$Component) {
+    _inherits(Scrollbars2, _React$Component);
 
     function Scrollbars2(props) {
         _classCallCheck(this, Scrollbars2);
@@ -169,7 +170,7 @@ var Scrollbars2 = exports.Scrollbars2 = function (_Component) {
                 return _this2.scrollingManager.cancelFlash();
             };
             this.api.update = function () {
-                return _this2.scrollingManager.update();
+                return _this2.update();
             };
             this.api.data = function () {
                 return _this2.scrollingManager.prepareExportableData();
@@ -185,10 +186,16 @@ var Scrollbars2 = exports.Scrollbars2 = function (_Component) {
     }, {
         key: 'update',
         value: function update() {
+            var _this3 = this;
+
             if (!this.scrollDataManager) return;
             this.scrollDataManager.update();
-            this.scrollingManager.initializeX();
-            this.scrollingManager.initializeY();
+
+            var to = setTimeout(function () {
+                _this3.scrollingManager.initializeX();
+                _this3.scrollingManager.initializeY();
+                clearTimeout(to);
+            }, 20);
         }
     }, {
         key: 'addListeners',
@@ -334,7 +341,10 @@ var Scrollbars2 = exports.Scrollbars2 = function (_Component) {
             this.styleTagId = isDefaultStyle ? cssStylesheetID : CSS_TAG_ID + "_" + cssStyleClass;
             this.styleClass = cssStyleClass;
             this.styleManager = new _utils.StyleManager(this.styleTagId, this.styleClass);
-            this.styleManager.setParsedRules(this.props.parsedStyle || defaultParsedStyle);
+
+            if (this.props.injectStyle || this.props.parsedStyle) {
+                this.styleManager.setParsedRules(this.props.parsedStyle || defaultParsedStyle);
+            }
         }
     }, {
         key: 'componentDidMount',
@@ -383,51 +393,52 @@ var Scrollbars2 = exports.Scrollbars2 = function (_Component) {
     }]);
 
     return Scrollbars2;
-}(_react.Component);
+}(_react2.default.Component);
 
 /*** PROPS ***/
 
 
 Scrollbars2.propTypes = {
-    showVertical: _react.PropTypes.bool,
-    showHorizontal: _react.PropTypes.bool,
-    autoHide: _react.PropTypes.bool,
-    autoHideTimeout: _react.PropTypes.number,
-    autoHeight: _react.PropTypes.bool,
-    autoHeightMin: _react.PropTypes.number,
-    autoHeightMax: _react.PropTypes.number,
-    thumbMinSize: _react.PropTypes.number,
-    className: _react.PropTypes.string,
+    showVertical: _propTypes2.default.bool,
+    showHorizontal: _propTypes2.default.bool,
+    autoHide: _propTypes2.default.bool,
+    autoHideTimeout: _propTypes2.default.number,
+    autoHeight: _propTypes2.default.bool,
+    autoHeightMin: _propTypes2.default.number,
+    autoHeightMax: _propTypes2.default.number,
+    thumbMinSize: _propTypes2.default.number,
+    className: _propTypes2.default.string,
 
-    onMount: _react.PropTypes.func,
-    onScroll: _react.PropTypes.func,
-    onScrollStart: _react.PropTypes.func,
-    onScrollEnd: _react.PropTypes.func,
-    onScrollFrame: _react.PropTypes.func,
-    onUpdate: _react.PropTypes.func,
-    atBottom: _react.PropTypes.func,
-    atTop: _react.PropTypes.func,
-    atRight: _react.PropTypes.func,
-    atLeft: _react.PropTypes.func,
+    onMount: _propTypes2.default.func,
+    onScroll: _propTypes2.default.func,
+    onScrollStart: _propTypes2.default.func,
+    onScrollEnd: _propTypes2.default.func,
+    onScrollFrame: _propTypes2.default.func,
+    onUpdate: _propTypes2.default.func,
+    atBottom: _propTypes2.default.func,
+    atTop: _propTypes2.default.func,
+    atRight: _propTypes2.default.func,
+    atLeft: _propTypes2.default.func,
 
-    cssStyleClass: _react.PropTypes.string,
-    cssStylesheetID: _react.PropTypes.string,
-    flashTime: _react.PropTypes.number,
-    flashTimeDelay: _react.PropTypes.number,
+    cssStyleClass: _propTypes2.default.string,
+    cssStylesheetID: _propTypes2.default.string,
+    flashTime: _propTypes2.default.number,
+    flashTimeDelay: _propTypes2.default.number,
 
-    containerStyle: _react.PropTypes.object,
-    viewStyle: _react.PropTypes.object,
-    tracksStyle: _react.PropTypes.object,
-    thumbsStyle: _react.PropTypes.object,
-    parsedStyle: _react.PropTypes.string,
+    containerStyle: _propTypes2.default.object,
+    viewStyle: _propTypes2.default.object,
+    tracksStyle: _propTypes2.default.object,
+    thumbsStyle: _propTypes2.default.object,
+    parsedStyle: _propTypes2.default.string,
+    injectStyle: _propTypes2.default.bool,
 
-    preventScrolling: _react.PropTypes.bool,
-    updateOnUpdates: _react.PropTypes.bool,
-    expandTracks: _react.PropTypes.bool,
-    syncTracks: _react.PropTypes.bool,
-    hideUnnecessary: _react.PropTypes.bool,
-    passiveEvent: _react.PropTypes.bool,
-    usePerformantView: _react.PropTypes.bool
+    preventScrolling: _propTypes2.default.bool,
+    updateOnUpdates: _propTypes2.default.bool,
+    expandTracks: _propTypes2.default.bool,
+    syncTracks: _propTypes2.default.bool,
+    hideUnnecessary: _propTypes2.default.bool,
+    passiveEvent: _propTypes2.default.bool,
+    usePerformantView: _propTypes2.default.bool
 };
 Scrollbars2.defaultProps = {
     showVertical: true,
@@ -461,6 +472,7 @@ Scrollbars2.defaultProps = {
     tracksStyle: {},
     thumbsStyle: {},
     parsedStyle: null,
+    injectStyle: true,
 
     preventScrolling: true,
     updateOnUpdates: true,

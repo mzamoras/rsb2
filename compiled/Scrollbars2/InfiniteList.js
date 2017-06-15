@@ -12,6 +12,14 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
+var _propTypes = require('prop-types');
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+var _classnames = require('classnames');
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
 var _shallowequal = require('shallowequal');
 
 var _shallowequal2 = _interopRequireDefault(_shallowequal);
@@ -30,13 +38,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } //noinspection JSUnresolvedVariable
-
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var emptyArray = [];
 
-var InfiniteList = function (_Component) {
-    _inherits(InfiniteList, _Component);
+var InfiniteList = function (_React$Component) {
+    _inherits(InfiniteList, _React$Component);
 
     function InfiniteList(props) {
         _classCallCheck(this, InfiniteList);
@@ -225,7 +232,9 @@ var InfiniteList = function (_Component) {
             var _this3 = this;
 
             //When the number of items has changed
-            if (!(0, _shallowequal2.default)(this.props.items, nextProps.items)) {
+            //if ( !shallowEqual( this.props.items, nextProps.items ) ) {
+            if (!(0, _immutable.is)(this.props.items, nextProps.items)) {
+                console.log('differentItems', !(0, _shallowequal2.default)(this.props.items, nextProps.items));
                 var scrollbarsRef = this.refs.scrollbarsRef;
 
 
@@ -234,7 +243,7 @@ var InfiniteList = function (_Component) {
 
                 this.setState({ currentPage: 0 }, function () {
                     if (!scrollbarsRef || !scrollbarsRef.api) return;
-                    scrollbarsRef.update();
+                    scrollbarsRef.api.update();
                     scrollbarsRef.api.toTop();
                     _this3.enableScrollListening();
                 });
@@ -259,16 +268,21 @@ var InfiniteList = function (_Component) {
         value: function render() {
             var _this4 = this;
 
+            var _props2 = this.props,
+                scrollbarProps = _props2.scrollbarProps,
+                className = _props2.className;
             var currentPage = this.state.currentPage;
+            var pData = this.pData;
 
 
             return _react2.default.createElement(
                 _index.Scrollbars2,
-                { onScrollFrame: this.onScrollFrame, thumbMinSize: 30, ref: 'scrollbarsRef' },
+                _extends({}, scrollbarProps, { onScrollFrame: this.onScrollFrame, thumbMinSize: 30, ref: 'scrollbarsRef' }),
                 _react2.default.createElement(
                     'div',
-                    { className: 'items', ref: 'itemsContainerRef', style: { position: 'absolute', width: '100%' } },
-                    this.pData.map(function (object) {
+                    { className: (0, _classnames2.default)('items', className), ref: 'itemsContainerRef',
+                        style: { position: 'absolute', width: '100%' } },
+                    pData.map(function (object) {
                         var page = object.page,
                             from = object.from,
                             to = object.to;
@@ -285,7 +299,8 @@ var InfiniteList = function (_Component) {
                             pageItems: loopItems,
                             renderFunc: _this4.props.renderFunc,
                             isRenderable: isRenderable,
-                            isIterable: _this4.isIterable
+                            isIterable: _this4.isIterable,
+                            className: _this4.props.pageClassName
                         });
                     })
                 ),
@@ -301,27 +316,35 @@ var InfiniteList = function (_Component) {
     }]);
 
     return InfiniteList;
-}(_react.Component);
+}(_react2.default.Component);
 
+/**  P A G E   C O M P O N E N T **/
+/** ************************************************* **/
+
+
+InfiniteList.defaultProps = {
+    scrollbarProps: {}
+};
 InfiniteList.propTypes = {
-    items: _react.PropTypes.any.isRequired,
-    visibles: _react.PropTypes.number,
-    offset: _react.PropTypes.number,
-    renderFunc: _react.PropTypes.func.isRequired,
-    defaultRowHeight: _react.PropTypes.number.isRequired,
-    totalItems: _react.PropTypes.number.isRequired
+    items: _propTypes2.default.any.isRequired,
+    visibles: _propTypes2.default.number,
+    offset: _propTypes2.default.number,
+    renderFunc: _propTypes2.default.func.isRequired,
+    defaultRowHeight: _propTypes2.default.number.isRequired,
+    totalItems: _propTypes2.default.number.isRequired,
+    scrollbarProps: _propTypes2.default.object,
+    className: _propTypes2.default.string,
+    pageClassName: _propTypes2.default.string
 };
 
-var PageInfiniteList = function (_Component2) {
-    _inherits(PageInfiniteList, _Component2);
+var PageInfiniteList = function (_React$Component2) {
+    _inherits(PageInfiniteList, _React$Component2);
 
     function PageInfiniteList(props) {
         _classCallCheck(this, PageInfiniteList);
 
         var _this5 = _possibleConstructorReturn(this, (PageInfiniteList.__proto__ || Object.getPrototypeOf(PageInfiniteList)).call(this, props));
 
-        _this5.normalClass = props.pageData.cssClass;
-        _this5.renderClass = props.pageData.cssClass + " renderable";
         _this5.emptyStyle = {};
         _this5.pageKey = props.pageData.key;
         return _this5;
@@ -337,17 +360,22 @@ var PageInfiniteList = function (_Component2) {
         value: function render() {
             var _this6 = this;
 
-            var _props2 = this.props,
-                pageData = _props2.pageData,
-                pageItems = _props2.pageItems,
-                isRenderable = _props2.isRenderable,
-                isIterable = _props2.isIterable;
+            var _props3 = this.props,
+                pageData = _props3.pageData,
+                pageItems = _props3.pageItems,
+                isRenderable = _props3.isRenderable,
+                isIterable = _props3.isIterable,
+                className = _props3.className;
+
 
             var pageStyle = isRenderable ? this.emptyStyle : { height: pageData.height };
+            var cssClass = (0, _classnames2.default)(this.props.pageData.cssClass, className, {
+                renderable: isRenderable
+            });
 
             return _react2.default.createElement(
                 'div',
-                { ref: 'page', className: isRenderable ? this.renderClass : this.normalClass, style: pageStyle },
+                { ref: 'page', className: cssClass, style: pageStyle },
                 isRenderable && pageItems.map(function (x, y) {
 
                     var object = isIterable ? x[1] : x;
@@ -365,13 +393,14 @@ var PageInfiniteList = function (_Component2) {
     }]);
 
     return PageInfiniteList;
-}(_react.Component);
+}(_react2.default.Component);
 
 PageInfiniteList.propTypes = {
-    pageData: _react.PropTypes.any,
-    pageItems: _react.PropTypes.any,
-    renderFunc: _react.PropTypes.func,
-    isRenderable: _react.PropTypes.bool,
-    isIterable: _react.PropTypes.bool
+    pageData: _propTypes2.default.any,
+    pageItems: _propTypes2.default.any,
+    renderFunc: _propTypes2.default.func,
+    isRenderable: _propTypes2.default.bool,
+    isIterable: _propTypes2.default.bool,
+    className: _propTypes2.default.string
 };
 exports.default = InfiniteList;

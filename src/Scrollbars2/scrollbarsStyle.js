@@ -46,9 +46,19 @@ export default function ( props ) {
                 ...props.thumbsStyle,
             },
             view     : {
+                position  : 'absolute',
+                width     : "100%",
+                height    : "100%",
+                overflow  : 'scroll', //#todo: check for disable scroll behaviour
+                transform : 'translateZ(0)',
+                willChange: 'transform',
                 ...props.viewStyle
             },
             container: {
+                position: 'relative',
+                width   : "100%", // todo: review for fixed parent container width and height
+                height  : "100%", // todo: review for fixed parent container width and height
+                overflow: 'hidden',
                 ...props.containerStyle
             }
         },
